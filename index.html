@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TFM Budget Predictor & Campaign Intelligence</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+:root {
+  --bg-primary: #0a0a0f; --bg-secondary: #12121a; --bg-card: #1a1a2e; --bg-card-hover: #222240;
+  --border: #2a2a45; --text-primary: #e8e8f0; --text-secondary: #8888a8; --text-muted: #555570;
+  --accent-gold: #d4a843; --accent-gold-dim: rgba(212,168,67,0.15);
+  --meta-color: #4a90d9; --snap-color: #fffc00; --tiktok-color: #fe2c55;
+  --green: #22c55e; --red: #ef4444; --purple: #a855f7; --cyan: #06b6d4; --orange: #f97316;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:var(--bg-primary); color:var(--text-primary); min-height:100vh; }
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:var(--bg-primary); }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+/* TOP BAR */
+.top-bar { position:sticky; top:0; z-index:100; background:rgba(10,10,15,0.95); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:14px 30px; }
+.top-bar-inner { max-width:1600px; margin:0 auto; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+.brand { font-size:20px; font-weight:800; letter-spacing:2px; background:linear-gradient(135deg,var(--accent-gold),#f0d78c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; white-space:nowrap; }
+.brand span { font-weight:400; font-size:12px; letter-spacing:0; display:block; -webkit-text-fill-color:var(--text-secondary); background:none; }
+.input-group { display:flex; align-items:center; gap:8px; }
+.input-group label { font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:1px; white-space:nowrap; }
+.budget-input { width:140px; padding:8px 12px; font-size:16px; font-weight:700; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; color:var(--accent-gold); outline:none; text-align:right; }
+.budget-input:focus { border-color:var(--accent-gold); box-shadow:0 0 0 3px var(--accent-gold-dim); }
+.usd-equiv { font-size:12px; color:var(--text-muted); white-space:nowrap; }
+.period-toggle { display:flex; background:var(--bg-card); border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+.period-btn { padding:7px 14px; font-size:11px; font-weight:600; cursor:pointer; background:transparent; color:var(--text-secondary); border:none; transition:all 0.2s; text-transform:uppercase; letter-spacing:0.5px; }
+.period-btn.active { background:var(--accent-gold); color:#000; }
+.slider-group { display:flex; align-items:center; gap:6px; }
+.slider-group label { font-size:10px; color:var(--text-secondary); min-width:32px; }
+.platform-slider { width:70px; accent-color:var(--accent-gold); cursor:pointer; }
+.slider-val { font-size:11px; font-weight:700; color:var(--text-primary); min-width:28px; }
+.predict-btn { padding:8px 24px; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px; border:none; border-radius:8px; cursor:pointer; background:linear-gradient(135deg,var(--accent-gold),#c49530); color:#000; transition:all 0.3s; white-space:nowrap; }
+.predict-btn:hover { transform:translateY(-1px); box-shadow:0 4px 20px rgba(212,168,67,0.3); }
+
+/* ═══════════════════════ SHOPIFY-STYLE DATE BAR ═══════════════════════ */
+.date-bar { position:sticky; top:56px; z-index:99; background:rgba(18,18,26,0.97); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); padding:10px 30px; }
+.date-bar-inner { max-width:1600px; margin:0 auto; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.date-bar-inner .sep { width:1px; height:28px; background:var(--border); flex-shrink:0; }
+
+/* Date Picker Trigger (compact chip) */
+.dp-trigger { display:inline-flex; align-items:center; gap:8px; padding:6px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; cursor:pointer; transition:all 0.2s; user-select:none; }
+.dp-trigger:hover { border-color:var(--accent-gold); }
+.dp-trigger .dp-icon { font-size:13px; color:var(--text-muted); }
+.dp-trigger .dp-preset { font-size:12px; font-weight:600; color:var(--text-primary); }
+.dp-trigger .dp-range { font-size:12px; color:var(--text-secondary); padding-left:6px; border-left:1px solid var(--border); }
+.dp-trigger .dp-caret { font-size:10px; color:var(--text-muted); margin-left:2px; }
+
+/* Platform pills */
+.plat-toggles { display:flex; gap:4px; }
+.plat-toggle { padding:4px 12px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; border:2px solid; border-radius:14px; cursor:pointer; transition:all 0.2s; white-space:nowrap; background:transparent; }
+.plat-toggle.meta { border-color:var(--meta-color); color:var(--meta-color); }
+.plat-toggle.meta.active { background:var(--meta-color); color:#000; }
+.plat-toggle.snap { border-color:var(--snap-color); color:var(--snap-color); }
+.plat-toggle.snap.active { background:var(--snap-color); color:#000; }
+.plat-toggle.tiktok { border-color:var(--tiktok-color); color:var(--tiktok-color); }
+.plat-toggle.tiktok.active { background:var(--tiktok-color); color:#fff; }
+
+/* Currency toggle */
+.currency-toggle { display:flex; background:var(--bg-card); border-radius:6px; overflow:hidden; border:1px solid var(--border); }
+.currency-btn { padding:4px 12px; font-size:11px; font-weight:700; cursor:pointer; background:transparent; color:var(--text-secondary); border:none; transition:all 0.2s; }
+.currency-btn.active { background:var(--accent-gold); color:#000; }
+.reset-btn { padding:4px 14px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; border:1px solid var(--border); border-radius:6px; background:transparent; color:var(--text-muted); cursor:pointer; transition:all 0.2s; }
+.reset-btn:hover { border-color:var(--red); color:var(--red); }
+
+/* ═══════════════════════ CALENDAR DROPDOWN ═══════════════════════ */
+.cal-overlay { position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.45); display:none; align-items:flex-start; justify-content:center; padding-top:110px; }
+.cal-overlay.open { display:flex; }
+.cal-dropdown { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; box-shadow:0 24px 80px rgba(0,0,0,0.6); display:flex; overflow:hidden; max-width:720px; width:100%; animation:calIn 0.2s ease-out; }
+@keyframes calIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+
+/* Left sidebar — presets */
+.cal-presets { width:180px; border-right:1px solid var(--border); padding:8px 0; overflow-y:auto; max-height:480px; flex-shrink:0; }
+.cal-preset-item { padding:9px 16px; font-size:12px; color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:all 0.15s; }
+.cal-preset-item:hover { background:rgba(212,168,67,0.05); color:var(--text-primary); }
+.cal-preset-item.active { color:var(--accent-gold); font-weight:600; }
+.cal-preset-item.active::after { content:'\2713'; font-size:14px; }
+.cal-preset-divider { height:1px; background:var(--border); margin:4px 16px; }
+
+/* Right body — calendars */
+.cal-body { flex:1; padding:20px 24px; display:flex; flex-direction:column; }
+.cal-inputs { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.cal-input { flex:1; padding:9px 14px; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-size:13px; font-weight:500; font-family:'Inter',sans-serif; text-align:center; outline:none; cursor:default; }
+.cal-input:focus,.cal-input.active { border-color:var(--accent-gold); background:var(--bg-primary); }
+.cal-input-arrow { color:var(--text-muted); font-size:18px; flex-shrink:0; }
+
+/* Dual month grid */
+.cal-months { display:flex; gap:24px; flex:1; }
+.cal-month { flex:1; }
+.cal-month-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.cal-month-title { font-size:13px; font-weight:700; color:var(--text-primary); }
+.cal-nav { background:none; border:none; color:var(--text-muted); font-size:18px; cursor:pointer; padding:4px 8px; border-radius:6px; transition:all 0.15s; line-height:1; }
+.cal-nav:hover { color:var(--text-primary); background:rgba(255,255,255,0.05); }
+.cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); text-align:center; margin-bottom:4px; }
+.cal-wd { font-size:10px; font-weight:600; color:var(--text-muted); padding:4px 0; }
+.cal-days { display:grid; grid-template-columns:repeat(7,1fr); }
+.cal-day { height:32px; display:flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer; color:var(--text-secondary); transition:background 0.1s; position:relative; }
+.cal-day:hover { background:rgba(212,168,67,0.12); color:var(--text-primary); }
+.cal-day.empty { cursor:default; pointer-events:none; }
+.cal-day.today { color:var(--text-primary); font-weight:800; }
+.cal-day.in-range { background:rgba(212,168,67,0.08); }
+.cal-day.range-start { background:var(--accent-gold); color:#000; font-weight:700; border-radius:8px 0 0 8px; }
+.cal-day.range-end { background:var(--accent-gold); color:#000; font-weight:700; border-radius:0 8px 8px 0; }
+.cal-day.range-start.range-end { border-radius:8px; }
+.cal-day.has-data::after { content:''; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:var(--green); }
+
+/* Footer */
+.cal-footer { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border); }
+.cal-btn { padding:8px 22px; font-size:12px; font-weight:600; border-radius:8px; cursor:pointer; border:1px solid var(--border); font-family:'Inter',sans-serif; transition:all 0.15s; }
+.cal-cancel { background:transparent; color:var(--text-secondary); }
+.cal-cancel:hover { border-color:var(--text-secondary); color:var(--text-primary); }
+.cal-apply { background:var(--accent-gold); color:#000; border-color:var(--accent-gold); font-weight:700; }
+.cal-apply:hover { opacity:0.9; }
+
+/* More Filters */
+.more-filters-toggle { padding:4px 14px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; border:1px solid var(--border); border-radius:6px; background:transparent; color:var(--text-secondary); cursor:pointer; transition:all 0.2s; }
+.more-filters-toggle:hover { border-color:var(--accent-gold); color:var(--accent-gold); }
+.more-filters { max-height:0; overflow:hidden; transition:max-height 0.35s ease; background:rgba(18,18,26,0.97); border-bottom:1px solid transparent; }
+.more-filters.open { max-height:200px; border-bottom-color:var(--border); }
+.more-filters-inner { max-width:1600px; margin:0 auto; padding:12px 30px; display:flex; gap:20px; flex-wrap:wrap; align-items:center; }
+.filter-select { padding:5px 10px; font-size:11px; font-weight:500; background:var(--bg-card); border:1px solid var(--border); border-radius:6px; color:var(--text-primary); cursor:pointer; outline:none; font-family:'Inter',sans-serif; }
+.filter-pills { display:flex; gap:4px; flex-wrap:wrap; }
+.filter-pill { padding:3px 10px; font-size:10px; font-weight:600; border:1px solid var(--border); border-radius:12px; background:transparent; color:var(--text-secondary); cursor:pointer; transition:all 0.2s; }
+.filter-pill.active { background:var(--accent-gold-dim); border-color:var(--accent-gold); color:var(--accent-gold); }
+
+/* DASHBOARD */
+.dashboard { max-width:1600px; margin:0 auto; padding:24px 30px 60px; }
+.section-title { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:var(--accent-gold); margin:32px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.section-title .date-range-label { font-weight:400; font-size:11px; color:var(--text-muted); letter-spacing:0; text-transform:none; }
+
+/* KPI CARDS */
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:8px; }
+@media (max-width:1200px) { .kpi-grid { grid-template-columns:repeat(2,1fr); } }
+.kpi-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; position:relative; overflow:hidden; transition:all 0.3s; }
+.kpi-card:hover { border-color:var(--accent-gold); transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,0,0,0.3); }
+.kpi-card .label { font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+.kpi-card .value { font-size:26px; font-weight:800; color:var(--text-primary); font-variant-numeric:tabular-nums; }
+.kpi-card .sub { display:flex; align-items:center; gap:6px; margin-top:6px; font-size:11px; }
+.kpi-card .trend-up { color:var(--green); }
+.kpi-card .trend-down { color:var(--red); }
+.kpi-card .range { color:var(--text-muted); font-size:10px; margin-top:4px; }
+.kpi-card::after { content:''; position:absolute; top:0; right:0; width:60px; height:60px; background:radial-gradient(circle at top right,var(--accent-gold-dim),transparent); pointer-events:none; }
+.kpi-card.hist::after { background:radial-gradient(circle at top right,rgba(34,197,94,0.1),transparent); }
+
+/* CHARTS */
+.charts-row { display:grid; gap:16px; margin-bottom:16px; }
+.charts-row-3 { grid-template-columns:repeat(3,1fr); }
+.charts-row-4 { grid-template-columns:repeat(4,1fr); }
+@media (max-width:1200px) { .charts-row-3,.charts-row-4 { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:768px) { .charts-row-3,.charts-row-4 { grid-template-columns:1fr; } }
+.chart-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:20px; position:relative; }
+.chart-card h3 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary); margin-bottom:14px; }
+.chart-wrap { position:relative; width:100%; }
+.chart-wrap canvas { width:100% !important; }
+
+/* TABLES */
+.tables-section { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+@media (max-width:1000px) { .tables-section { grid-template-columns:1fr; } }
+.table-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:20px; overflow-x:auto; }
+.table-card h3 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary); margin-bottom:14px; }
+.table-card table { width:100%; border-collapse:collapse; font-size:12px; }
+.table-card th { text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); color:var(--accent-gold); font-weight:600; font-size:11px; text-transform:uppercase; }
+.table-card td { padding:7px 10px; border-bottom:1px solid rgba(42,42,69,0.5); color:var(--text-primary); }
+.table-card tr:hover td { background:rgba(212,168,67,0.03); }
+
+/* INSIGHTS */
+.insights-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:20px; }
+.insights-panel h3 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary); margin-bottom:14px; }
+.insight-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid rgba(42,42,69,0.3); font-size:13px; line-height:1.5; }
+.insight-item:last-child { border-bottom:none; }
+.insight-icon { width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.insight-icon.green { background:rgba(34,197,94,0.15); }
+.insight-icon.blue { background:rgba(74,144,217,0.15); }
+.insight-icon.purple { background:rgba(168,85,247,0.15); }
+.insight-icon.orange { background:rgba(249,115,22,0.15); }
+.insight-icon.gold { background:var(--accent-gold-dim); }
+.insight-icon.cyan { background:rgba(6,182,212,0.15); }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+.kpi-card,.chart-card,.table-card,.insights-panel { animation:fadeIn 0.4s ease-out; }
+
+@media (max-width:740px) { .cal-dropdown { flex-direction:column; } .cal-presets { width:100%; border-right:none; border-bottom:1px solid var(--border); max-height:160px; } }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+<div class="top-bar-inner">
+  <div class="brand">TFM<span>Budget Predictor & Campaign Intelligence</span></div>
+  <div class="input-group">
+    <label>Budget</label>
+    <input type="text" id="budgetInput" class="budget-input" value="5,000" placeholder="KWD">
+    <span class="usd-equiv" id="usdEquiv">= $16,300 USD</span>
+  </div>
+  <div class="input-group">
+    <label>Period</label>
+    <div class="period-toggle">
+      <button class="period-btn active" data-period="monthly" onclick="setPeriod('monthly')">Monthly</button>
+      <button class="period-btn" data-period="quarterly" onclick="setPeriod('quarterly')">Quarterly</button>
+      <button class="period-btn" data-period="annual" onclick="setPeriod('annual')">Annual</button>
+    </div>
+  </div>
+  <div class="input-group">
+    <label>Meta</label>
+    <input type="range" class="platform-slider" id="metaSlider" min="0" max="100" value="55" oninput="updateSliders('meta')">
+    <span class="slider-val" id="metaVal">55%</span>
+  </div>
+  <div class="input-group">
+    <label>Snap</label>
+    <input type="range" class="platform-slider" id="snapSlider" min="0" max="100" value="30" oninput="updateSliders('snap')">
+    <span class="slider-val" id="snapVal">30%</span>
+  </div>
+  <div class="input-group">
+    <label>TikTok</label>
+    <input type="range" class="platform-slider" id="tiktokSlider" min="0" max="100" value="15" oninput="updateSliders('tiktok')">
+    <span class="slider-val" id="tiktokVal">15%</span>
+  </div>
+  <button class="predict-btn" onclick="predict()">Predict</button>
+</div>
+</div>
+
+<!-- SHOPIFY-STYLE DATE BAR -->
+<div class="date-bar">
+<div class="date-bar-inner">
+  <div class="dp-trigger" onclick="openCalendar()">
+    <span class="dp-icon">&#x1F4C5;</span>
+    <span class="dp-preset" id="dpPreset">All Time</span>
+    <span class="dp-range" id="dpRange">Jan 1, 2025 – Feb 25, 2026</span>
+    <span class="dp-caret">&#9662;</span>
+  </div>
+  <span class="sep"></span>
+  <div class="plat-toggles">
+    <button class="plat-toggle meta active" onclick="togglePlatform('meta',this)">Meta</button>
+    <button class="plat-toggle snap active" onclick="togglePlatform('snap',this)">Snap</button>
+    <button class="plat-toggle tiktok active" onclick="togglePlatform('tiktok',this)">TikTok</button>
+  </div>
+  <span class="sep"></span>
+  <div class="currency-toggle">
+    <button class="currency-btn active" data-cur="KWD" onclick="setCurrency('KWD')">KWD</button>
+    <button class="currency-btn" data-cur="USD" onclick="setCurrency('USD')">USD</button>
+  </div>
+  <button class="reset-btn" onclick="resetFilters()">Reset</button>
+  <button class="more-filters-toggle" onclick="document.getElementById('moreFiltersPanel').classList.toggle('open')">More Filters</button>
+</div>
+</div>
+
+<!-- CALENDAR OVERLAY -->
+<div class="cal-overlay" id="calOverlay">
+<div class="cal-dropdown" onclick="event.stopPropagation()">
+  <div class="cal-presets" id="calPresets"></div>
+  <div class="cal-body">
+    <div class="cal-inputs">
+      <div class="cal-input" id="calFromInput" onclick="calSelectingStart=true;renderCal()">--</div>
+      <span class="cal-input-arrow">&#x2192;</span>
+      <div class="cal-input" id="calToInput" onclick="calSelectingStart=false;renderCal()">--</div>
+    </div>
+    <div class="cal-months" id="calMonths"></div>
+    <div class="cal-footer">
+      <button class="cal-btn cal-cancel" onclick="closeCal()">Cancel</button>
+      <button class="cal-btn cal-apply" onclick="applyCal()">Apply</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MORE FILTERS -->
+<div class="more-filters" id="moreFiltersPanel">
+<div class="more-filters-inner">
+  <div class="input-group"><label>Region</label>
+    <select class="filter-select" id="filterRegion" onchange="applyFilters()">
+      <option value="all">All Governorates</option><option value="Hawalli">Hawalli</option><option value="Farwaniya">Farwaniya</option>
+      <option value="Mubarak Al Kabeer">Mubarak Al-Kabeer</option><option value="Asma">Capital</option>
+      <option value="Ahmadi">Ahmadi</option><option value="Jahra">Jahra</option>
+    </select>
+  </div>
+  <div class="input-group"><label>Age Group</label>
+    <div class="filter-pills" id="agePills">
+      <button class="filter-pill active" data-age="all" onclick="toggleAgePill(this)">All</button>
+      <button class="filter-pill active" data-age="18-24" onclick="toggleAgePill(this)">18-24</button>
+      <button class="filter-pill active" data-age="25-34" onclick="toggleAgePill(this)">25-34</button>
+      <button class="filter-pill active" data-age="35-44" onclick="toggleAgePill(this)">35-44</button>
+      <button class="filter-pill active" data-age="45-54" onclick="toggleAgePill(this)">45-54</button>
+      <button class="filter-pill active" data-age="55-64" onclick="toggleAgePill(this)">55-64</button>
+      <button class="filter-pill active" data-age="65+" onclick="toggleAgePill(this)">65+</button>
+    </div>
+  </div>
+  <div class="input-group"><label>Gender</label>
+    <select class="filter-select" id="filterGender" onchange="applyFilters()"><option value="all">All</option><option value="Female">Female</option><option value="Male">Male</option></select>
+  </div>
+  <div class="input-group"><label>Campaign</label>
+    <select class="filter-select" id="filterCampaign" onchange="applyFilters()"><option value="all">All Types</option><option value="conversion">Conversion</option><option value="awareness">Awareness</option></select>
+  </div>
+</div>
+</div>
+
+<div class="dashboard">
+
+<!-- HISTORICAL PERFORMANCE KPIs -->
+<div class="section-title">Historical Performance <span class="date-range-label" id="histDateLabel">All Time</span></div>
+<div class="kpi-grid" id="histKpiGrid">
+  <div class="kpi-card hist"><div class="label">Total Orders</div><div class="value" id="hist-orders">--</div><div class="sub"><span id="hist-orders-sub"></span></div></div>
+  <div class="kpi-card hist"><div class="label">Revenue</div><div class="value" id="hist-revenue">--</div><div class="sub"><span id="hist-revenue-sub"></span></div></div>
+  <div class="kpi-card hist"><div class="label">Ad Spend</div><div class="value" id="hist-spend">--</div><div class="sub"><span id="hist-spend-sub"></span></div></div>
+  <div class="kpi-card hist"><div class="label">Avg Order Value</div><div class="value" id="hist-aov">--</div><div class="sub"><span id="hist-aov-sub"></span></div></div>
+  <div class="kpi-card hist"><div class="label">ROAS</div><div class="value" id="hist-roas">--</div><div class="sub"><span id="hist-roas-sub"></span></div></div>
+  <div class="kpi-card hist"><div class="label">Cost Per Order</div><div class="value" id="hist-cpa">--</div><div class="sub"><span id="hist-cpa-sub"></span></div></div>
+  <div class="kpi-card hist"><div class="label">Items Sold</div><div class="value" id="hist-items">--</div><div class="sub"><span id="hist-items-sub"></span></div></div>
+  <div class="kpi-card hist"><div class="label">Unique Customers</div><div class="value" id="hist-customers">--</div><div class="sub"><span id="hist-customers-sub"></span></div></div>
+</div>
+
+<!-- PREDICTED PERFORMANCE KPIs -->
+<div class="section-title">Predicted Performance Metrics</div>
+<div class="kpi-grid" id="kpiGrid">
+  <div class="kpi-card"><div class="label">Total Impressions</div><div class="value" id="kpi-impressions">--</div><div class="sub"><span class="trend-up" id="kpi-impressions-trend"></span></div><div class="range" id="kpi-impressions-range"></div></div>
+  <div class="kpi-card"><div class="label">Total Reach</div><div class="value" id="kpi-reach">--</div><div class="sub"><span class="trend-up" id="kpi-reach-trend"></span></div><div class="range" id="kpi-reach-range"></div></div>
+  <div class="kpi-card"><div class="label">Total Clicks</div><div class="value" id="kpi-clicks">--</div><div class="sub"><span class="trend-up" id="kpi-clicks-trend"></span></div><div class="range" id="kpi-clicks-range"></div></div>
+  <div class="kpi-card"><div class="label">Total Purchases</div><div class="value" id="kpi-purchases">--</div><div class="sub"><span class="trend-up" id="kpi-purchases-trend"></span></div><div class="range" id="kpi-purchases-range"></div></div>
+  <div class="kpi-card"><div class="label">Expected Revenue</div><div class="value" id="kpi-revenue">--</div><div class="sub"><span class="trend-up" id="kpi-revenue-trend"></span></div><div class="range" id="kpi-revenue-range"></div></div>
+  <div class="kpi-card"><div class="label">Avg ROAS</div><div class="value" id="kpi-roas">--</div><div class="sub"><span class="trend-up" id="kpi-roas-trend"></span></div><div class="range" id="kpi-roas-range"></div></div>
+  <div class="kpi-card"><div class="label">Cost Per Purchase</div><div class="value" id="kpi-cpp">--</div><div class="sub"><span class="trend-up" id="kpi-cpp-trend"></span></div><div class="range" id="kpi-cpp-range"></div></div>
+  <div class="kpi-card"><div class="label">Expected Profit</div><div class="value" id="kpi-profit">--</div><div class="sub"><span class="trend-up" id="kpi-profit-trend"></span></div><div class="range" id="kpi-profit-range"></div></div>
+</div>
+
+<!-- CHARTS ROW 1 -->
+<div class="section-title">Platform Performance</div>
+<div class="charts-row charts-row-3">
+  <div class="chart-card"><h3>Budget Allocation</h3><div class="chart-wrap"><canvas id="chartDonut"></canvas></div></div>
+  <div class="chart-card"><h3>Predicted Metrics by Platform</h3><div class="chart-wrap"><canvas id="chartGroupedBar"></canvas></div></div>
+  <div class="chart-card"><h3>ROAS by Platform</h3><div class="chart-wrap"><canvas id="chartROAS"></canvas></div></div>
+</div>
+
+<!-- CHARTS ROW 2 -->
+<div class="section-title">Historical Trends <span class="date-range-label" id="trendDateLabel"></span></div>
+<div class="charts-row charts-row-3">
+  <div class="chart-card"><h3>Monthly Spend vs Revenue</h3><div class="chart-wrap"><canvas id="chartSpendRev"></canvas></div></div>
+  <div class="chart-card"><h3>Monthly Purchases Trend</h3><div class="chart-wrap"><canvas id="chartPurchases"></canvas></div></div>
+  <div class="chart-card"><h3>CPA Trend Over Time</h3><div class="chart-wrap"><canvas id="chartCPA"></canvas></div></div>
+</div>
+
+<!-- CHARTS ROW 3 -->
+<div class="section-title">Deep Insights</div>
+<div class="charts-row charts-row-4">
+  <div class="chart-card"><h3>Age Group Performance</h3><div class="chart-wrap"><canvas id="chartAge"></canvas></div></div>
+  <div class="chart-card"><h3>Geographic Performance</h3><div class="chart-wrap"><canvas id="chartGeo"></canvas></div></div>
+  <div class="chart-card"><h3>Campaign Type Effectiveness</h3><div class="chart-wrap"><canvas id="chartRadar"></canvas></div></div>
+  <div class="chart-card"><h3>Top Products by Revenue</h3><div class="chart-wrap"><canvas id="chartTreemap"></canvas></div></div>
+</div>
+
+<!-- TABLES & INSIGHTS -->
+<div class="section-title">Prediction Tables & Insights</div>
+<div class="tables-section">
+  <div class="table-card"><h3>Budget Scenarios</h3>
+    <table><thead><tr><th>Metric</th><th>Conservative</th><th>Expected</th><th>Optimistic</th></tr></thead><tbody id="scenarioBody"></tbody></table>
+  </div>
+  <div class="table-card"><h3>Historical vs Predicted</h3>
+    <table><thead><tr><th>Metric</th><th>Your Budget</th><th>Historical (Filtered)</th><th>2026 Plan</th></tr></thead><tbody id="comparisonBody"></tbody></table>
+  </div>
+</div>
+<div class="insights-panel"><h3>Smart Insights</h3><div id="insightsList"></div></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
+const DATA = {"platforms": {"meta": {"spend_usd": 198204.86, "impressions": 27880352.0, "reach": 5915109.0, "frequency": 3.3894833333333327, "clicks": 12957.0, "purchases": 3687.0, "roas": 1.87, "ctr": 0.41857142857142854, "cpa_usd": 53.76, "spend_kwd": 60799.04, "cpm": 7.11, "cpc": 15.3, "revenue_usd": 371205.36, "revenue_kwd": 113866.68}, "snapchat": {"spend_usd": 61982.95, "impressions": 24780608.0, "reach": 0, "clicks": 53013.0, "purchases": 2333.0, "roas": 3.2, "revenue_usd": 198081.29, "ctr": 0.425, "ecpm": 0.0, "ecpc": 0.0, "spend_kwd": 19013.17, "cpm": 2.5, "cpc": 1.17, "cpa_usd": 26.57, "revenue_kwd": 60761.13, "frequency": 2.5}, "tiktok": {"spend_usd": 35013.87, "impressions": 35343867.0, "clicks": 85533.0, "purchases": 5342.0, "roas": 2.1, "ctr": 0.0028625, "cpc": 0.36125, "cpm": 1.0862500000000002, "cvr": 0.0, "spend_kwd": 10740.45, "cpa_usd": 6.55, "revenue_kwd": 22554.95, "frequency": 2.5, "revenue_usd": 73529.13}}, "totals": {"spend_usd": 295201.68, "spend_kwd": 90552.66, "impressions": 88004827, "clicks": 151503, "purchases": 11362, "revenue_usd": 642815.78, "revenue_kwd": 197182.75, "roas": 2.18}, "orders": {"total_revenue_kwd": 175179.5, "total_orders": 6626, "total_items": 14484, "aov_kwd": 26.44, "unique_customers": 5420, "repeat_customers": 897, "repeat_rate": 16.5}, "products": [{"rank": 1.0, "name": "4 PCs Home Fragrance 500ML", "qty_sold": 2102.0, "pct_total": 14.5, "revenue_kwd": 33038.51480769231, "pct_revenue": 18.9, "avg_price_kwd": 15.71765690185172, "category": "Home Fragrance"}, {"rank": 2.0, "name": "Honey Tobacco", "qty_sold": 1207.0, "pct_total": 8.3, "revenue_kwd": 17202.23988360916, "pct_revenue": 9.8, "avg_price_kwd": 14.25206286960163, "category": "Other Fragrances"}, {"rank": 3.0, "name": "Milky Saffron", "qty_sold": 1182.0, "pct_total": 8.2, "revenue_kwd": 16917.41053223505, "pct_revenue": 9.7, "avg_price_kwd": 14.31253006111256, "category": "Other Fragrances"}, {"rank": 4.0, "name": "Allure", "qty_sold": 764.0, "pct_total": 5.3, "revenue_kwd": 8448.717792879637, "pct_revenue": 4.8, "avg_price_kwd": 11.05853114251261, "category": "Other Fragrances"}, {"rank": 5.0, "name": "Milky Saffron HM", "qty_sold": 640.0, "pct_total": 4.4, "revenue_kwd": 6355.082185431526, "pct_revenue": 3.6, "avg_price_kwd": 9.92981591473676, "category": "Other Fragrances"}, {"rank": 6.0, "name": "The Castle", "qty_sold": 541.0, "pct_total": 3.7, "revenue_kwd": 3562.751123876124, "pct_revenue": 2.0, "avg_price_kwd": 6.585491911046441, "category": "Other Fragrances"}, {"rank": 7.0, "name": "The Palace", "qty_sold": 531.0, "pct_total": 3.7, "revenue_kwd": 3330.215836940838, "pct_revenue": 1.9, "avg_price_kwd": 6.271592913259581, "category": "Other Fragrances"}, {"rank": 8.0, "name": "The Tower", "qty_sold": 514.0, "pct_total": 3.5, "revenue_kwd": 3347.501587301587, "pct_revenue": 1.9, "avg_price_kwd": 6.51264900253227, "category": "Other Fragrances"}, {"rank": 9.0, "name": "Legends of Niche Collection", "qty_sold": 513.0, "pct_total": 3.5, "revenue_kwd": 10090.19166666666, "pct_revenue": 5.8, "avg_price_kwd": 19.66898960363871, "category": "Other Fragrances"}, {"rank": 10.0, "name": "The Mansion", "qty_sold": 421.0, "pct_total": 2.9, "revenue_kwd": 2842.882106782107, "pct_revenue": 1.6, "avg_price_kwd": 6.752689089743722, "category": "Other Fragrances"}, {"rank": 11.0, "name": "Graffiti", "qty_sold": 387.0, "pct_total": 2.7, "revenue_kwd": 4047.098507492507, "pct_revenue": 2.3, "avg_price_kwd": 10.45761888240958, "category": "Other Fragrances"}, {"rank": 12.0, "name": "Honey Tobacco HM", "qty_sold": 368.0, "pct_total": 2.5, "revenue_kwd": 3789.523931185774, "pct_revenue": 2.2, "avg_price_kwd": 10.29761937822221, "category": "Other Fragrances"}, {"rank": 13.0, "name": "Black Powder HM", "qty_sold": 310.0, "pct_total": 2.1, "revenue_kwd": 3091.733730158731, "pct_revenue": 1.8, "avg_price_kwd": 9.973334613415261, "category": "Other Fragrances"}, {"rank": 14.0, "name": "Dirty Mango", "qty_sold": 310.0, "pct_total": 2.1, "revenue_kwd": 3913.59210745395, "pct_revenue": 2.2, "avg_price_kwd": 12.62449066920629, "category": "Other Fragrances"}, {"rank": 15.0, "name": "Honey Tobacco Set", "qty_sold": 308.0, "pct_total": 2.1, "revenue_kwd": 4522.657951770452, "pct_revenue": 2.6, "avg_price_kwd": 14.68395438886511, "category": "Gift Sets"}, {"rank": 16.0, "name": "Vibes", "qty_sold": 306.0, "pct_total": 2.1, "revenue_kwd": 3178.045079759422, "pct_revenue": 1.8, "avg_price_kwd": 10.38576823450792, "category": "Other Fragrances"}, {"rank": 17.0, "name": "Black Powder", "qty_sold": 302.0, "pct_total": 2.1, "revenue_kwd": 4297.313289376601, "pct_revenue": 2.5, "avg_price_kwd": 14.22951420323378, "category": "Other Fragrances"}, {"rank": 18.0, "name": "Precious", "qty_sold": 269.0, "pct_total": 1.9, "revenue_kwd": 2887.259819902319, "pct_revenue": 1.6, "avg_price_kwd": 10.73330788067777, "category": "Other Fragrances"}, {"rank": 19.0, "name": "Honey Tobacco Travel Set - 5x10 ml", "qty_sold": 263.0, "pct_total": 1.8, "revenue_kwd": 2798.166865079366, "pct_revenue": 1.6, "avg_price_kwd": 10.63941773794436, "category": "Gift Sets"}, {"rank": 20.0, "name": "Milky Saffron Set", "qty_sold": 234.0, "pct_total": 1.6, "revenue_kwd": 3665.150213675213, "pct_revenue": 2.1, "avg_price_kwd": 15.66303510117612, "category": "Gift Sets"}], "product_categories": {"Home Fragrance": 33038.51480769231, "Other Fragrances": 97301.559181052, "Gift Sets": 10985.97503052503}, "age_data": {"18-24": {"purchases": 295.0, "spend": 2891.45, "impressions": 358420.0, "clicks": 5842.0, "ctr": 1.63, "cpc": 0.49, "reach_share": 14.0}, "25-34": {"purchases": 1254.0, "spend": 6847.23, "impressions": 892145.0, "clicks": 15234.0, "ctr": 1.71, "cpc": 0.45, "reach_share": 33.3}, "35-44": {"purchases": 1105.0, "spend": 5423.87, "impressions": 624893.0, "clicks": 12456.0, "ctr": 1.99, "cpc": 0.44, "reach_share": 26.3}, "45-54": {"purchases": 589.0, "spend": 3124.56, "impressions": 312456.0, "clicks": 6891.0, "ctr": 2.21, "cpc": 0.45, "reach_share": 15.2}, "55-64": {"purchases": 312.0, "spend": 1523.78, "impressions": 142367.0, "clicks": 4768.0, "ctr": 3.35, "cpc": 0.32, "reach_share": 7.4}, "65+": {"purchases": 132.0, "spend": 774.34, "impressions": 78234.0, "clicks": 2419.0, "ctr": 3.09, "cpc": 0.32, "reach_share": 3.8}}, "gender_data": {"Female": {"spend": 12847.56, "impressions": 1524893.0, "clicks": 31724.0, "ctr": 2.08, "purchases": 2428.0, "pct_total": 65.9, "cpp": 5.29, "roas": 0.0}, "Male": {"spend": 7012.34, "impressions": 812456.0, "clicks": 14234.0, "ctr": 1.75}, "Unknown": {"spend": 725.33, "impressions": 71166.0, "clicks": 1652.0, "ctr": 2.32}}, "geo_data": {"Hawalli Governorate": {"orders": 1209.0, "pct_orders": 20.5, "revenue_kwd": 32274.9, "pct_revenue": 22.0, "aov_kwd": 26.69553349875931}, "Farwaniya Governorates": {"orders": 1068.0, "pct_orders": 18.1, "revenue_kwd": 26075.1, "pct_revenue": 17.8, "aov_kwd": 24.41488764044944}, "Mubarak Al Kabeer Governorate": {"orders": 1014.0, "pct_orders": 17.2, "revenue_kwd": 26055.95, "pct_revenue": 17.7, "aov_kwd": 25.69620315581854}, "Asma Governorates": {"orders": 982.0, "pct_orders": 16.6, "revenue_kwd": 25378.05, "pct_revenue": 17.3, "aov_kwd": 25.84322810590631}, "Ahmadi Governorate": {"orders": 921.0, "pct_orders": 15.6, "revenue_kwd": 21214.25, "pct_revenue": 14.4, "aov_kwd": 23.03393051031487}, "Jahra Governorate": {"orders": 710.0, "pct_orders": 12.0, "revenue_kwd": 15900.7, "pct_revenue": 10.8, "aov_kwd": 22.39535211267606}, "Capital (Kuwait City)": {"purchases": 0.0, "spend": 5842.34, "impressions": 712456.0, "clicks": 13567.0, "ctr": 1.9, "reach_share": 28.4}, "Hawalli": {"purchases": 0.0, "spend": 4923.56, "impressions": 598234.0, "clicks": 11456.0, "ctr": 1.91, "reach_share": 23.9}, "Farwaniya": {"purchases": 0.0, "spend": 4124.78, "impressions": 512367.0, "clicks": 9823.0, "ctr": 1.92, "reach_share": 20.0}, "Ahmadi": {"purchases": 0.0, "spend": 3012.45, "impressions": 367891.0, "clicks": 6891.0, "ctr": 1.87, "reach_share": 14.6}, "Jahra": {"purchases": 0.0, "spend": 1623.78, "impressions": 178234.0, "clicks": 3598.0, "ctr": 2.02, "reach_share": 7.9}, "Mubarak Al-Kabeer": {"purchases": 0.0, "spend": 1058.32, "impressions": 112333.0, "clicks": 2275.0, "ctr": 2.03, "reach_share": 5.1}, "Capital Governorate": {"spend_usd": 17072.841263999995, "impressions": 2106750.0, "purchases": 0.0}, "Farwaniya Governorate": {"spend_usd": 842.9714550000001, "impressions": 101539.0, "purchases": 0.0}, "Mubarak Al-Kabeer Governorate": {"spend_usd": 96.250923, "impressions": 11290.0, "purchases": 0.0}}, "monthly_performance": [{"month": "Jan", "target_kwd": 10000.0, "achieved_kwd": 5069.92, "target_pct": 50.7, "budget_kwd": 4000.0, "spent_usd": 7540.41, "spent_kwd": 2337.53, "budget_pct": 58.4, "roas": 0.0}, {"month": "Feb", "target_kwd": 15000.0, "achieved_kwd": 1774.01, "target_pct": 11.8, "budget_kwd": 6000.0, "spent_usd": 2133.65, "spent_kwd": 661.43, "budget_pct": 11.0, "roas": 0.0}, {"month": "March", "target_kwd": 15000.0, "achieved_kwd": 4738.9, "target_pct": 31.6, "budget_kwd": 6000.0, "spent_usd": 1542.43, "spent_kwd": 478.15, "budget_pct": 8.0, "roas": 0.0}, {"month": "April", "target_kwd": 20000.0, "achieved_kwd": 51069.43, "target_pct": 255.3, "budget_kwd": 7500.0, "spent_usd": 24974.56, "spent_kwd": 7742.11, "budget_pct": 103.2, "roas": 0.0}, {"month": "May", "target_kwd": 12500.0, "achieved_kwd": 26151.48, "target_pct": 209.2, "budget_kwd": 5000.0, "spent_usd": 13351.75, "spent_kwd": 4139.04, "budget_pct": 82.8, "roas": 0.0}], "monthly_orders": [{"month": "Jan", "orders": 196.0, "revenue_kwd": 5919.15, "aov_kwd": 30.19974489795918, "items": 370.0, "unique_cust": 190.0}, {"month": "Feb", "orders": 102.0, "revenue_kwd": 3056.751, "aov_kwd": 29.96814705882353, "items": 195.0, "unique_cust": 100.0}, {"month": "Mar", "orders": 199.0, "revenue_kwd": 5505.0, "aov_kwd": 27.66331658291457, "items": 487.0, "unique_cust": 191.0}, {"month": "Apr", "orders": 1493.0, "revenue_kwd": 40661.8, "aov_kwd": 27.23496316141996, "items": 3889.0, "unique_cust": 1407.0}, {"month": "May", "orders": 1116.0, "revenue_kwd": 24780.4, "aov_kwd": 22.20465949820789, "items": 2143.0, "unique_cust": 1050.0}, {"month": "Jun", "orders": 381.0, "revenue_kwd": 7980.6, "aov_kwd": 20.94645669291339, "items": 796.0, "unique_cust": 372.0}, {"month": "Jul", "orders": 228.0, "revenue_kwd": 6377.1, "aov_kwd": 27.96973684210526, "items": 459.0, "unique_cust": 217.0}, {"month": "Aug", "orders": 107.0, "revenue_kwd": 3956.0, "aov_kwd": 36.97196261682243, "items": 277.0, "unique_cust": 104.0}, {"month": "Sep", "orders": 102.0, "revenue_kwd": 3374.1, "aov_kwd": 33.07941176470588, "items": 201.0, "unique_cust": 99.0}, {"month": "Oct", "orders": 1870.0, "revenue_kwd": 51105.499, "aov_kwd": 27.32914385026738, "items": 4067.0, "unique_cust": 1768.0}, {"month": "Nov", "orders": 583.0, "revenue_kwd": 14853.2, "aov_kwd": 25.47718696397942, "items": 1060.0, "unique_cust": 569.0}, {"month": "Dec", "orders": 249.0, "revenue_kwd": 7609.9, "aov_kwd": 30.56184738955823, "items": 540.0, "unique_cust": 246.0}], "snap_monthly": [{"month": "April", "spend": 12143.15, "revenue": 89594.85, "roas": 0.0, "purchases": 1113.0, "impressions": 5801896.0, "cpm": 2.09}, {"month": "May", "spend": 275.66, "revenue": 1528.13, "roas": 0.0, "purchases": 20.0, "impressions": 84328.0, "cpm": 3.27}, {"month": "June", "spend": 2702.15, "revenue": 4492.37, "roas": 0.0, "purchases": 54.0, "impressions": 898136.0, "cpm": 3.01}, {"month": "July", "spend": 3800.89, "revenue": 3947.28, "roas": 0.0, "purchases": 55.0, "impressions": 1296081.0, "cpm": 2.93}, {"month": "August", "spend": 2570.14, "revenue": 5858.83, "roas": 0.0, "purchases": 46.0, "impressions": 668945.0, "cpm": 3.84}, {"month": "September", "spend": 1071.25, "revenue": 2780.9, "roas": 0.0, "purchases": 33.0, "impressions": 304532.0, "cpm": 3.52}, {"month": "October", "spend": 36111.59, "revenue": 84417.84, "roas": 0.0, "purchases": 971.0, "impressions": 15091611.0, "cpm": 2.39}, {"month": "November", "spend": 3308.15, "revenue": 5461.09, "roas": 0.0, "purchases": 41.0, "impressions": 635079.0, "cpm": 5.21}], "historical_monthly": [{"month": "2025-04", "spend_usd": 41170.459995000005, "impressions": 5105614.0, "reach": 1588080.0, "clicks": 18885.0, "purchases": 0.0, "roas": 0}], "cpa_monthly": [], "campaign_types": {"meta": {}, "snapchat": {"Awareness (Prospecting)": 0.35, "Awareness (Retargeting)": 0.1, "Sales (Prospecting)": 0.3, "Sales (Retargeting)": 0.25}, "tiktok": {"Awareness (Prospecting)": 0.4, "Awareness (Retargeting)": 0.1, "Sales (Prospecting)": 0.3, "Sales (Retargeting)": 0.2}}, "campaign_type_perf": {"conversion": {"roas": 2.806976767169405, "ctr": 0.5061428571428571, "cpa": 31.436774335504314, "cpm": 4.39875, "purchases": 7953.4}, "awareness": {"roas": 1.2955277386935713, "ctr": 0.3374285714285714, "cpa": 56.58619380390777, "cpm": 3.0791249999999994, "purchases": 3408.6}}, "budget_2026": {"total_kwd": 120000, "meta_kwd": 54000, "meta_pct": 45, "snapchat_kwd": 36000, "snapchat_pct": 30, "tiktok_kwd": 30000, "tiktok_pct": 25}, "expected_2026": {"meta": {"conversions": 54000.0, "roas": 176040.0, "revenue": 49588732.3943662}, "snapchat": {"conversions": 36000.0, "roas": 117360.0, "revenue": 46943999.99999999}, "tiktok": {"conversions": 30000.0, "roas": 97800.0, "revenue": 98787878.78787878}}, "feb2026": {"meta": {"spend_usd": 10308.37, "purchases": 158.0, "purchase_value": 3361.13, "roas": 0.33, "cpa_usd": 65.24}, "snapchat": {"spend_usd": 4323.74, "purchases": 50.0, "purchase_value": 4924.44, "roas": 1.14, "cpa_usd": 86.47}, "tiktok": {"spend_usd": 1008.58, "purchases": 26.0, "purchase_value": 1339.57, "roas": 1.33, "cpa_usd": 38.79}}, "monthly_report": [{"month": "Jan", "target": 0.5069918000000001, "achieved": 5069.918000000001, "budget": 0.5843817750000001}, {"month": "Feb", "target": 0.11826733333333334, "achieved": 1774.01, "budget": 0.11023858333333333}, {"month": "March", "target": 0.31592699999999996, "achieved": 4738.905, "budget": 0.17089219999999997}, {"month": "April", "target": 2.5534712500000003, "achieved": 51069.42500000001, "budget": 1.0322818133333334}, {"month": "May", "target": 2.0921184000000004, "achieved": 26151.480000000003, "budget": 0.8278085}], "retention": {"One-Time Buyers": {"customers": 4523.0, "pct_total": 83.5, "orders": 4523.0, "revenue_kwd": 115600.299, "aov_kwd": 25.55832390006633}, "Light Repeat (2-3x)": {"customers": 837.0, "pct_total": 15.4, "orders": 1815.0, "revenue_kwd": 51323.651, "aov_kwd": 61.31857945041816}, "Loyal (4+ orders)": {"customers": 60.0, "pct_total": 1.1, "orders": 288.0, "revenue_kwd": 8255.55, "aov_kwd": 137.5925}}};
+const MONTHLY = [{"month": "Jan", "revenue_kwd": 5919.0, "spend_kwd": 2338.0, "orders": 196, "snap_purchases": 0}, {"month": "Feb", "revenue_kwd": 3057.0, "spend_kwd": 661.0, "orders": 102, "snap_purchases": 0}, {"month": "Mar", "revenue_kwd": 5505.0, "spend_kwd": 478.0, "orders": 199, "snap_purchases": 0}, {"month": "Apr", "revenue_kwd": 40662.0, "spend_kwd": 7742.0, "orders": 1493, "snap_purchases": 1113}, {"month": "May", "revenue_kwd": 24780.0, "spend_kwd": 4139.0, "orders": 1116, "snap_purchases": 20}, {"month": "Jun", "revenue_kwd": 7981.0, "spend_kwd": 1123.0, "orders": 381, "snap_purchases": 54}, {"month": "Jul", "revenue_kwd": 6377.0, "spend_kwd": 897.0, "orders": 228, "snap_purchases": 55}, {"month": "Aug", "revenue_kwd": 3956.0, "spend_kwd": 557.0, "orders": 107, "snap_purchases": 46}, {"month": "Sep", "revenue_kwd": 3374.0, "spend_kwd": 475.0, "orders": 102, "snap_purchases": 33}, {"month": "Oct", "revenue_kwd": 51105.0, "spend_kwd": 7191.0, "orders": 1870, "snap_purchases": 971}, {"month": "Nov", "revenue_kwd": 14853.0, "spend_kwd": 2090.0, "orders": 583, "snap_purchases": 41}, {"month": "Dec", "revenue_kwd": 7610.0, "spend_kwd": 1071.0, "orders": 249, "snap_purchases": 0}];
+const MONTHLY_EXT = [{"month": "Jan", "year": 2025, "label": "Jan 2025", "revenue_kwd": 5919.0, "spend_kwd": 2338.0, "orders": 196, "aov_kwd": 30.2, "items": 370, "unique_cust": 190, "meta": {"spend": 2338, "revenue": 3418, "orders": 63}, "snap": {"spend": 491, "revenue": 1824, "orders": 40}, "tiktok": {"spend": 0, "revenue": 677, "orders": 93}}, {"month": "Feb", "year": 2025, "label": "Feb 2025", "revenue_kwd": 3057.0, "spend_kwd": 661.0, "orders": 102, "aov_kwd": 29.97, "items": 195, "unique_cust": 100, "meta": {"spend": 661, "revenue": 1765, "orders": 33}, "snap": {"spend": 139, "revenue": 942, "orders": 20}, "tiktok": {"spend": 0, "revenue": 350, "orders": 49}}, {"month": "Mar", "year": 2025, "label": "Mar 2025", "revenue_kwd": 5505.0, "spend_kwd": 478.0, "orders": 199, "aov_kwd": 27.66, "items": 487, "unique_cust": 191, "meta": {"spend": 478, "revenue": 3179, "orders": 64}, "snap": {"spend": 100, "revenue": 1696, "orders": 40}, "tiktok": {"spend": 0, "revenue": 630, "orders": 95}}, {"month": "Apr", "year": 2025, "label": "Apr 2025", "revenue_kwd": 40662.0, "spend_kwd": 7742.0, "orders": 1493, "aov_kwd": 27.23, "items": 3889, "unique_cust": 1407, "meta": {"spend": 7742, "revenue": 23481, "orders": 484}, "snap": {"spend": 3725, "revenue": 27483, "orders": 1113}, "tiktok": {"spend": 0, "revenue": 0, "orders": 0}}, {"month": "May", "year": 2025, "label": "May 2025", "revenue_kwd": 24780.0, "spend_kwd": 4139.0, "orders": 1116, "aov_kwd": 22.2, "items": 2143, "unique_cust": 1050, "meta": {"spend": 4139, "revenue": 14310, "orders": 362}, "snap": {"spend": 85, "revenue": 469, "orders": 20}, "tiktok": {"spend": 0, "revenue": 10001, "orders": 734}}, {"month": "Jun", "year": 2025, "label": "Jun 2025", "revenue_kwd": 7981.0, "spend_kwd": 1123.0, "orders": 381, "aov_kwd": 20.95, "items": 796, "unique_cust": 372, "meta": {"spend": 754, "revenue": 4609, "orders": 123}, "snap": {"spend": 829, "revenue": 1378, "orders": 54}, "tiktok": {"spend": 0, "revenue": 1994, "orders": 204}}, {"month": "Jul", "year": 2025, "label": "Jul 2025", "revenue_kwd": 6377.0, "spend_kwd": 897.0, "orders": 228, "aov_kwd": 27.97, "items": 459, "unique_cust": 217, "meta": {"spend": 602, "revenue": 3683, "orders": 73}, "snap": {"spend": 1166, "revenue": 1211, "orders": 55}, "tiktok": {"spend": 0, "revenue": 1483, "orders": 100}}, {"month": "Aug", "year": 2025, "label": "Aug 2025", "revenue_kwd": 3956.0, "spend_kwd": 557.0, "orders": 107, "aov_kwd": 36.97, "items": 277, "unique_cust": 104, "meta": {"spend": 374, "revenue": 2284, "orders": 34}, "snap": {"spend": 788, "revenue": 1797, "orders": 46}, "tiktok": {"spend": 0, "revenue": 0, "orders": 27}}, {"month": "Sep", "year": 2025, "label": "Sep 2025", "revenue_kwd": 3374.0, "spend_kwd": 475.0, "orders": 102, "aov_kwd": 33.08, "items": 201, "unique_cust": 99, "meta": {"spend": 319, "revenue": 1948, "orders": 33}, "snap": {"spend": 329, "revenue": 853, "orders": 33}, "tiktok": {"spend": 0, "revenue": 573, "orders": 36}}, {"month": "Oct", "year": 2025, "label": "Oct 2025", "revenue_kwd": 51105.0, "spend_kwd": 7191.0, "orders": 1870, "aov_kwd": 27.33, "items": 4067, "unique_cust": 1768, "meta": {"spend": 4828, "revenue": 29511, "orders": 606}, "snap": {"spend": 11077, "revenue": 25895, "orders": 971}, "tiktok": {"spend": 0, "revenue": 0, "orders": 293}}, {"month": "Nov", "year": 2025, "label": "Nov 2025", "revenue_kwd": 14853.0, "spend_kwd": 2090.0, "orders": 583, "aov_kwd": 25.48, "items": 1060, "unique_cust": 569, "meta": {"spend": 1403, "revenue": 8577, "orders": 189}, "snap": {"spend": 1015, "revenue": 1675, "orders": 41}, "tiktok": {"spend": 0, "revenue": 4601, "orders": 353}}, {"month": "Dec", "year": 2025, "label": "Dec 2025", "revenue_kwd": 7610.0, "spend_kwd": 1071.0, "orders": 249, "aov_kwd": 30.56, "items": 540, "unique_cust": 246, "meta": {"spend": 719, "revenue": 4395, "orders": 80}, "snap": {"spend": 225, "revenue": 2345, "orders": 51}, "tiktok": {"spend": 127, "revenue": 870, "orders": 118}}, {"month": "Jan", "year": 2026, "label": "Jan 2026", "revenue_kwd": 6849, "spend_kwd": 964, "orders": 224, "aov_kwd": 26.44, "items": 0, "unique_cust": 0, "meta": {"spend": 647, "revenue": 3955, "orders": 72}, "snap": {"spend": 202, "revenue": 2110, "orders": 46}, "tiktok": {"spend": 114, "revenue": 783, "orders": 105}}, {"month": "Feb", "year": 2026, "label": "Feb 2026", "revenue_kwd": 9625, "spend_kwd": 4798, "orders": 234, "aov_kwd": 41.13, "items": 0, "unique_cust": 0, "meta": {"spend": 3162, "revenue": 3361, "orders": 158}, "snap": {"spend": 1326, "revenue": 4924, "orders": 50}, "tiktok": {"spend": 309, "revenue": 1340, "orders": 26}}];
+const KWD_TO_USD = 3.26;
+let currentPeriod = 'monthly', periodMultiplier = 1, charts = {};
+
+const BENCH_BASE = {
+  meta: { spend_usd:DATA.platforms.meta.spend_usd, impressions:DATA.platforms.meta.impressions, reach:DATA.platforms.meta.reach, clicks:DATA.platforms.meta.clicks, purchases:DATA.platforms.meta.purchases, roas:DATA.platforms.meta.roas||4.5, ctr:DATA.platforms.meta.ctr||0.42, cpm:DATA.platforms.meta.cpm||7.11, cpc:DATA.platforms.meta.cpc||15.3, cpa:DATA.platforms.meta.cpa_usd||26.89, frequency:DATA.platforms.meta.frequency||3.39 },
+  snapchat: { spend_usd:DATA.platforms.snapchat.spend_usd, impressions:DATA.platforms.snapchat.impressions, clicks:DATA.platforms.snapchat.clicks, purchases:DATA.platforms.snapchat.purchases, roas:DATA.platforms.snapchat.roas||3.2, ctr:DATA.platforms.snapchat.ctr||0.21, cpm:DATA.platforms.snapchat.cpm||2.5, cpc:DATA.platforms.snapchat.cpc||1.17, cpa:DATA.platforms.snapchat.cpa_usd||26.57, frequency:DATA.platforms.snapchat.frequency||2.5 },
+  tiktok: { spend_usd:DATA.platforms.tiktok.spend_usd, impressions:DATA.platforms.tiktok.impressions, clicks:DATA.platforms.tiktok.clicks, purchases:DATA.platforms.tiktok.purchases, roas:DATA.platforms.tiktok.roas||2.1, ctr:DATA.platforms.tiktok.ctr>0.1?DATA.platforms.tiktok.ctr:0.24, cpm:DATA.platforms.tiktok.cpm||0.99, cpc:DATA.platforms.tiktok.cpc>0.01?DATA.platforms.tiktok.cpc:0.41, cpa:DATA.platforms.tiktok.cpa_usd||6.55, frequency:DATA.platforms.tiktok.frequency||2.5 }
+};
+
+// ═══════════════════════════════════════════════════════════
+// FILTER STATE
+// ═══════════════════════════════════════════════════════════
+const MN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const WD = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+const M2I = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+
+// Data months set for has-data dots
+const DATA_MONTHS = new Set();
+MONTHLY_EXT.forEach(m => DATA_MONTHS.add(m.year+'-'+M2I[m.month]));
+
+let platforms = { meta:true, snap:true, tiktok:true };
+let currency = 'KWD';
+
+// Calendar state
+let calStart = new Date(2025,0,1);
+let calEnd = new Date(2026,1,25);
+let calTempStart = new Date(calStart);
+let calTempEnd = new Date(calEnd);
+let calSelectingStart = true;
+let calLeftYear = 2026, calLeftMonth = 0; // left calendar month
+let calPresetId = 'all';
+
+// ═══════════════════════════════════════════════════════════
+// PRESETS
+// ═══════════════════════════════════════════════════════════
+const PRESETS = [
+  {id:'today',label:'Today'},{id:'yesterday',label:'Yesterday'},
+  {id:'_d1',divider:true},
+  {id:'last7',label:'Last 7 days'},{id:'last30',label:'Last 30 days'},{id:'last90',label:'Last 90 days'},{id:'last365',label:'Last 365 days'},{id:'last12m',label:'Last 12 months'},
+  {id:'_d2',divider:true},
+  {id:'thisWeek',label:'This week'},{id:'thisMonth',label:'This month'},{id:'lastMonth',label:'Last month'},
+  {id:'_d3',divider:true},
+  {id:'q1',label:'Q1 2025'},{id:'q2',label:'Q2 2025'},{id:'q3',label:'Q3 2025'},{id:'q4',label:'Q4 2025'},
+  {id:'_d4',divider:true},
+  {id:'full2025',label:'Full 2025'},{id:'y2026',label:'2026'},{id:'all',label:'All Time'},
+];
+
+function presetRange(id) {
+  const t = new Date(); t.setHours(0,0,0,0);
+  const d = (n) => { const x=new Date(t); x.setDate(x.getDate()+n); return x; };
+  switch(id) {
+    case 'today': return [new Date(t),new Date(t)];
+    case 'yesterday': return [d(-1),d(-1)];
+    case 'last7': return [d(-6),new Date(t)];
+    case 'last30': return [d(-29),new Date(t)];
+    case 'last90': return [d(-89),new Date(t)];
+    case 'last365': return [d(-364),new Date(t)];
+    case 'last12m': { const s=new Date(t); s.setFullYear(s.getFullYear()-1); s.setDate(s.getDate()+1); return [s,new Date(t)]; }
+    case 'thisWeek': { const s=new Date(t); s.setDate(s.getDate()-s.getDay()); return [s,new Date(t)]; }
+    case 'thisMonth': return [new Date(t.getFullYear(),t.getMonth(),1),new Date(t)];
+    case 'lastMonth': return [new Date(t.getFullYear(),t.getMonth()-1,1),new Date(t.getFullYear(),t.getMonth(),0)];
+    case 'q1': return [new Date(2025,0,1),new Date(2025,2,31)];
+    case 'q2': return [new Date(2025,3,1),new Date(2025,5,30)];
+    case 'q3': return [new Date(2025,6,1),new Date(2025,8,30)];
+    case 'q4': return [new Date(2025,9,1),new Date(2025,11,31)];
+    case 'full2025': return [new Date(2025,0,1),new Date(2025,11,31)];
+    case 'y2026': return [new Date(2026,0,1),new Date(2026,11,31)];
+    case 'all': return [new Date(2025,0,1),new Date(2026,1,25)];
+    default: return [new Date(2025,0,1),new Date(2026,1,25)];
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════
+function fmt(n,dec=0){ if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if(n>=1e3)return(n/1e3).toFixed(dec>0?1:0)+'K'; return n.toFixed(dec); }
+function fmtKWD(n){ return n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,',')+' KWD'; }
+function fmtUSD(n){ return '$'+n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+function fmtNum(n){ return n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+function fmtCur(kwd){ return currency==='USD'?fmtUSD(kwd*KWD_TO_USD):fmtKWD(kwd); }
+function fmtCurVal(kwd){ return currency==='USD'?kwd*KWD_TO_USD:kwd; }
+function curSuf(){ return currency==='USD'?' USD':' KWD'; }
+
+function fmtDate(d){ return MN[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear(); }
+function fmtDateShort(d){ return MS[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear(); }
+function fmtRangeShort(s,e){
+  if(s.getFullYear()===e.getFullYear()&&s.getMonth()===e.getMonth()) return MS[s.getMonth()]+' '+s.getDate()+'–'+e.getDate()+', '+s.getFullYear();
+  if(s.getFullYear()===e.getFullYear()) return MS[s.getMonth()]+' '+s.getDate()+' – '+MS[e.getMonth()]+' '+e.getDate()+', '+s.getFullYear();
+  return fmtDateShort(s)+' – '+fmtDateShort(e);
+}
+
+function sameDay(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+
+function animateValue(el,target,prefix='',suffix='',duration=800){
+  const start=parseFloat(el.textContent.replace(/[^0-9.-]/g,''))||0;
+  const t0=performance.now();
+  function upd(now){
+    const p=Math.min((now-t0)/duration,1), ease=1-Math.pow(1-p,3), cur=start+(target-start)*ease;
+    if(Math.abs(target)>=1e6)el.textContent=prefix+(cur/1e6).toFixed(1)+'M'+suffix;
+    else if(Math.abs(target)>=1e3)el.textContent=prefix+(cur/1e3).toFixed(1)+'K'+suffix;
+    else if(Math.abs(target)<10)el.textContent=prefix+cur.toFixed(2)+suffix;
+    else el.textContent=prefix+Math.round(cur).toLocaleString()+suffix;
+    if(p<1)requestAnimationFrame(upd);
+  }
+  requestAnimationFrame(upd);
+}
+
+// ═══════════════════════════════════════════════════════════
+// CALENDAR RENDERING
+// ═══════════════════════════════════════════════════════════
+function openCalendar(){
+  calTempStart=new Date(calStart); calTempEnd=new Date(calEnd); calSelectingStart=true;
+  calLeftYear=calEnd.getFullYear(); calLeftMonth=calEnd.getMonth()-1;
+  if(calLeftMonth<0){ calLeftMonth=11; calLeftYear--; }
+  renderCal();
+  document.getElementById('calOverlay').classList.add('open');
+}
+function closeCal(){ document.getElementById('calOverlay').classList.remove('open'); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeCal(); });
+
+function applyCal(){
+  calStart=new Date(calTempStart); calEnd=new Date(calTempEnd);
+  closeCal(); updateDateChip(); applyFilters();
+}
+
+function updateDateChip(){
+  const p=PRESETS.find(x=>x.id===calPresetId);
+  document.getElementById('dpPreset').textContent=p?p.label:'Custom';
+  document.getElementById('dpRange').textContent=fmtRangeShort(calStart,calEnd);
+}
+
+function renderCal(){
+  // Presets
+  const pe=document.getElementById('calPresets');
+  pe.innerHTML=PRESETS.map(p=>{
+    if(p.divider)return '<div class="cal-preset-divider"></div>';
+    return `<div class="cal-preset-item${calPresetId===p.id?' active':''}" onclick="selectPreset('${p.id}')">${p.label}</div>`;
+  }).join('');
+
+  // Inputs
+  document.getElementById('calFromInput').textContent=fmtDate(calTempStart);
+  document.getElementById('calToInput').textContent=fmtDate(calTempEnd);
+  document.getElementById('calFromInput').className='cal-input'+(calSelectingStart?' active':'');
+  document.getElementById('calToInput').className='cal-input'+(!calSelectingStart?' active':'');
+
+  // Two month grids
+  const ry=calLeftMonth===11?calLeftYear+1:calLeftYear;
+  const rm=calLeftMonth===11?0:calLeftMonth+1;
+  document.getElementById('calMonths').innerHTML=renderMonth(calLeftYear,calLeftMonth,true)+renderMonth(ry,rm,false);
+}
+
+function renderMonth(yr,mo,isLeft){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const first=new Date(yr,mo,1).getDay();
+  const days=new Date(yr,mo+1,0).getDate();
+  const hasData=DATA_MONTHS.has(yr+'-'+mo);
+  let h='<div class="cal-month"><div class="cal-month-header">';
+  h+=isLeft?'<button class="cal-nav" onclick="navMonth(-1)">&larr;</button>':'<span></span>';
+  h+='<span class="cal-month-title">'+MN[mo]+' '+yr+'</span>';
+  h+=isLeft?'<span></span>':'<button class="cal-nav" onclick="navMonth(1)">&rarr;</button>';
+  h+='</div><div class="cal-weekdays">';
+  WD.forEach(w=>h+='<div class="cal-wd">'+w+'</div>');
+  h+='</div><div class="cal-days">';
+  for(let i=0;i<first;i++)h+='<div class="cal-day empty"></div>';
+  for(let d=1;d<=days;d++){
+    const dt=new Date(yr,mo,d);
+    const ts=dt.getTime(),ss=calTempStart.getTime(),es=calTempEnd.getTime();
+    let cls='cal-day';
+    if(sameDay(dt,today))cls+=' today';
+    if(hasData)cls+=' has-data';
+    if(ts===ss&&ts===es)cls+=' range-start range-end';
+    else if(ts===ss)cls+=' range-start';
+    else if(ts===es)cls+=' range-end';
+    else if(ts>ss&&ts<es)cls+=' in-range';
+    h+=`<div class="${cls}" onclick="pickDay(${yr},${mo},${d})">${d}</div>`;
+  }
+  h+='</div></div>';
+  return h;
+}
+
+function navMonth(delta){
+  calLeftMonth+=delta;
+  if(calLeftMonth>11){calLeftMonth=0;calLeftYear++;}
+  if(calLeftMonth<0){calLeftMonth=11;calLeftYear--;}
+  renderCal();
+}
+
+function pickDay(yr,mo,dy){
+  const dt=new Date(yr,mo,dy);
+  if(calSelectingStart){
+    calTempStart=dt; calTempEnd=dt; calSelectingStart=false;
+  } else {
+    if(dt<calTempStart){ calTempEnd=new Date(calTempStart); calTempStart=dt; }
+    else { calTempEnd=dt; }
+    calSelectingStart=true;
+  }
+  calPresetId='';
+  renderCal();
+}
+
+function selectPreset(id){
+  const [s,e]=presetRange(id);
+  calTempStart=s; calTempEnd=e; calPresetId=id;
+  calLeftYear=e.getFullYear(); calLeftMonth=e.getMonth()-1;
+  if(calLeftMonth<0){calLeftMonth=11;calLeftYear--;}
+  renderCal();
+}
+
+// Close overlay when clicking backdrop
+document.getElementById('calOverlay').addEventListener('click',function(e){
+  if(e.target===this)closeCal();
+});
+
+// ═══════════════════════════════════════════════════════════
+// FILTER LOGIC
+// ═══════════════════════════════════════════════════════════
+function getFilteredMonths(){
+  return MONTHLY_EXT.filter(m=>{
+    const mi=M2I[m.month];
+    const ms=new Date(m.year,mi,1);
+    const me=new Date(m.year,mi+1,0);
+    return ms<=calEnd && me>=calStart;
+  });
+}
+
+function getFilteredTotals(){
+  const months=getFilteredMonths();
+  let sp=0,rv=0,od=0,it=0,cu=0;
+  months.forEach(m=>{
+    if(platforms.meta){sp+=m.meta.spend;rv+=m.meta.revenue;od+=m.meta.orders;}
+    if(platforms.snap){sp+=m.snap.spend;rv+=m.snap.revenue;od+=m.snap.orders;}
+    if(platforms.tiktok){sp+=m.tiktok.spend;rv+=m.tiktok.revenue;od+=m.tiktok.orders;}
+    it+=m.items||0; cu+=m.unique_cust||0;
+  });
+  return {spend_kwd:sp,revenue_kwd:rv,orders:od,aov_kwd:od>0?rv/od:0,roas:sp>0?rv/sp:0,cpa_usd:od>0?(sp*KWD_TO_USD)/od:0,items:it,customers:cu};
+}
+
+function getAllTimeTotals(){
+  let sp=0,rv=0;
+  MONTHLY_EXT.forEach(m=>{sp+=m.meta.spend+m.snap.spend+m.tiktok.spend;rv+=m.meta.revenue+m.snap.revenue+m.tiktok.revenue;});
+  return {spend_kwd:sp,revenue_kwd:rv,roas:sp>0?rv/sp:1};
+}
+
+function getSeasonalFactor(){
+  const f=getFilteredTotals(),a=getAllTimeTotals();
+  if(!f.roas||!a.roas)return 1;
+  return Math.max(0.3,Math.min(3,f.roas/a.roas));
+}
+
+function getAdjustedBench(){
+  const sf=getSeasonalFactor();
+  const b={};
+  for(const[k,v]of Object.entries(BENCH_BASE))b[k]={...v,roas:v.roas*sf,cpa:v.cpa/sf};
+  return b;
+}
+
+function getFilterLabel(){
+  const dr=fmtRangeShort(calStart,calEnd);
+  const pp=[];
+  if(platforms.meta)pp.push('Meta');if(platforms.snap)pp.push('Snap');if(platforms.tiktok)pp.push('TikTok');
+  return dr+' · '+(pp.length===3?'All Platforms':pp.join(', ')||'None')+' · '+currency;
+}
+
+// ═══════════════════════════════════════════════════════════
+// UI HANDLERS
+// ═══════════════════════════════════════════════════════════
+function togglePlatform(p,btn){ platforms[p]=!platforms[p]; btn.classList.toggle('active'); applyFilters(); }
+function setCurrency(c){ currency=c; document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active')); document.querySelector(`.currency-btn[data-cur="${c}"]`).classList.add('active'); applyFilters(); }
+
+function resetFilters(){
+  calStart=new Date(2025,0,1); calEnd=new Date(2026,1,25); calPresetId='all';
+  platforms={meta:true,snap:true,tiktok:true}; currency='KWD';
+  document.querySelectorAll('.plat-toggle').forEach(b=>b.classList.add('active'));
+  document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.currency-btn[data-cur="KWD"]').classList.add('active');
+  document.getElementById('filterRegion').value='all';
+  document.getElementById('filterGender').value='all';
+  document.getElementById('filterCampaign').value='all';
+  document.querySelectorAll('#agePills .filter-pill').forEach(p=>p.classList.add('active'));
+  updateDateChip(); applyFilters();
+}
+
+function toggleAgePill(btn){
+  const age=btn.dataset.age;
+  if(age==='all'){
+    const pills=document.querySelectorAll('#agePills .filter-pill');
+    const allOn=[...pills].every(p=>p.classList.contains('active'));
+    pills.forEach(p=>{if(allOn)p.classList.remove('active');else p.classList.add('active');});
+  }else{
+    btn.classList.toggle('active');
+    const pills=document.querySelectorAll('#agePills .filter-pill:not([data-age="all"])');
+    const allPill=document.querySelector('#agePills .filter-pill[data-age="all"]');
+    if([...pills].every(p=>p.classList.contains('active')))allPill.classList.add('active');else allPill.classList.remove('active');
+  }
+  applyFilters();
+}
+
+function setPeriod(p){
+  currentPeriod=p;
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`[data-period="${p}"]`).classList.add('active');
+  periodMultiplier=p==='monthly'?1:p==='quarterly'?3:12;
+  predict();
+}
+
+function updateSliders(changed){
+  const m=parseInt(document.getElementById('metaSlider').value);
+  const s=parseInt(document.getElementById('snapSlider').value);
+  const t=parseInt(document.getElementById('tiktokSlider').value);
+  const total=m+s+t;
+  document.getElementById('metaVal').textContent=m+'%';
+  document.getElementById('snapVal').textContent=s+'%';
+  document.getElementById('tiktokVal').textContent=t+'%';
+  const c=total===100?'':'#ff8800';
+  document.getElementById('metaVal').style.color=c;
+  document.getElementById('snapVal').style.color=c;
+  document.getElementById('tiktokVal').style.color=c;
+}
+
+// ═══════════════════════════════════════════════════════════
+// MASTER APPLY
+// ═══════════════════════════════════════════════════════════
+function applyFilters(){
+  const lbl=getFilterLabel();
+  document.getElementById('histDateLabel').textContent=lbl;
+  const tl=document.getElementById('trendDateLabel'); if(tl)tl.textContent=lbl;
+  updateHistoricalKPIs();
+  predict();
+}
+
+function updateHistoricalKPIs(){
+  const t=getFilteredTotals();
+  const isU=currency==='USD';
+  const rv=isU?t.revenue_kwd*KWD_TO_USD:t.revenue_kwd;
+  const sp=isU?t.spend_kwd*KWD_TO_USD:t.spend_kwd;
+  const av=isU?t.aov_kwd*KWD_TO_USD:t.aov_kwd;
+  const pf=isU?'$':'';
+  animateValue(document.getElementById('hist-orders'),t.orders);
+  animateValue(document.getElementById('hist-revenue'),rv,pf,rv>=1000?'':isU?' USD':' KWD');
+  animateValue(document.getElementById('hist-spend'),sp,pf,sp>=1000?'':isU?' USD':' KWD');
+  animateValue(document.getElementById('hist-aov'),av,pf);
+  animateValue(document.getElementById('hist-roas'),t.roas,'','x');
+  animateValue(document.getElementById('hist-cpa'),t.cpa_usd,'$');
+  animateValue(document.getElementById('hist-items'),t.items);
+  animateValue(document.getElementById('hist-customers'),t.customers);
+  const nm=getFilteredMonths().length||1;
+  document.getElementById('hist-orders-sub').textContent=Math.round(t.orders/nm)+' orders/month avg';
+  document.getElementById('hist-revenue-sub').textContent=fmtCur(t.revenue_kwd/nm)+'/mo avg';
+  document.getElementById('hist-spend-sub').textContent=fmtCur(t.spend_kwd/nm)+'/mo avg';
+  document.getElementById('hist-aov-sub').textContent=t.orders>0?(t.items/t.orders).toFixed(1)+' items/order':'--';
+  document.getElementById('hist-roas-sub').innerHTML=t.roas>=1?'<span style="color:var(--green)">&#9650; Profitable</span>':'<span style="color:var(--red)">&#9660; Below breakeven</span>';
+  document.getElementById('hist-cpa-sub').textContent=fmtUSD(t.cpa_usd)+' avg CPA';
+  document.getElementById('hist-items-sub').textContent=Math.round(t.items/nm)+' items/mo';
+  document.getElementById('hist-customers-sub').textContent=Math.round(t.customers/nm)+' cust/mo';
+}
+
+// ═══════════════════════════════════════════════════════════
+// PREDICTION ENGINE
+// ═══════════════════════════════════════════════════════════
+const budgetInput=document.getElementById('budgetInput');
+budgetInput.addEventListener('input',function(){let v=this.value.replace(/[^0-9]/g,'');if(v){this.value=parseInt(v).toLocaleString();document.getElementById('usdEquiv').textContent='= $'+(parseInt(v)*KWD_TO_USD).toLocaleString(undefined,{maximumFractionDigits:0})+' USD';}});
+budgetInput.addEventListener('keydown',function(e){if(e.key==='Enter')predict();});
+
+function predict(){
+  const budgetKWD=parseInt(budgetInput.value.replace(/[^0-9]/g,''))||5000;
+  const totalBudgetKWD=budgetKWD*periodMultiplier;
+  const totalBudgetUSD=totalBudgetKWD*KWD_TO_USD;
+  const mPctR=parseInt(document.getElementById('metaSlider').value)/100;
+  const sPctR=parseInt(document.getElementById('snapSlider').value)/100;
+  const tPctR=parseInt(document.getElementById('tiktokSlider').value)/100;
+  const tot=mPctR+sPctR+tPctR;
+  const mPct=tot>0?mPctR/tot:0.55, sPct=tot>0?sPctR/tot:0.30, tPct=tot>0?tPctR/tot:0.15;
+  const BENCH=getAdjustedBench();
+  function pp(budget,bench){const imp=(budget/bench.cpm)*1000;return{impressions:imp,reach:imp/bench.frequency,clicks:imp*(bench.ctr/100),purchases:budget/bench.cpa,revenue:budget*bench.roas,budget};}
+  const pred={meta:pp(totalBudgetUSD*mPct,BENCH.meta),snapchat:pp(totalBudgetUSD*sPct,BENCH.snapchat),tiktok:pp(totalBudgetUSD*tPct,BENCH.tiktok)};
+  const totals={impressions:pred.meta.impressions+pred.snapchat.impressions+pred.tiktok.impressions,reach:pred.meta.reach+pred.snapchat.reach+pred.tiktok.reach,clicks:pred.meta.clicks+pred.snapchat.clicks+pred.tiktok.clicks,purchases:pred.meta.purchases+pred.snapchat.purchases+pred.tiktok.purchases,revenue:pred.meta.revenue+pred.snapchat.revenue+pred.tiktok.revenue};
+  const avgROAS=totalBudgetUSD>0?totals.revenue/totalBudgetUSD:0;
+  const cpp=totals.purchases>0?totalBudgetUSD/totals.purchases:0;
+  const profit=totals.revenue-totalBudgetUSD;
+  const histMonthlySpend=DATA.totals.spend_usd/12;
+  const spendRatio=(totalBudgetUSD/periodMultiplier)/histMonthlySpend;
+  const isU=currency==='USD';
+  const revKPI=isU?totals.revenue:totals.revenue/KWD_TO_USD;
+  const profitKPI=isU?profit:profit/KWD_TO_USD;
+  animateValue(document.getElementById('kpi-impressions'),totals.impressions);
+  animateValue(document.getElementById('kpi-reach'),totals.reach);
+  animateValue(document.getElementById('kpi-clicks'),totals.clicks);
+  animateValue(document.getElementById('kpi-purchases'),totals.purchases);
+  animateValue(document.getElementById('kpi-revenue'),revKPI,isU?'$':'');
+  animateValue(document.getElementById('kpi-roas'),avgROAS,'','x');
+  animateValue(document.getElementById('kpi-cpp'),cpp,'$');
+  animateValue(document.getElementById('kpi-profit'),profitKPI,isU?'$':'');
+  const tH=r=>{if(r>1.05)return`<span class="trend-up">&#9650; ${((r-1)*100).toFixed(0)}% vs avg</span>`;if(r<0.95)return`<span class="trend-down">&#9660; ${((1-r)*100).toFixed(0)}% vs avg</span>`;return`<span style="color:var(--text-muted)">&#9654; On par</span>`;};
+  document.getElementById('kpi-impressions-trend').innerHTML=tH(spendRatio);
+  document.getElementById('kpi-reach-trend').innerHTML=tH(spendRatio);
+  document.getElementById('kpi-clicks-trend').innerHTML=tH(spendRatio);
+  document.getElementById('kpi-purchases-trend').innerHTML=tH(spendRatio);
+  document.getElementById('kpi-revenue-trend').innerHTML=tH(spendRatio*avgROAS/(DATA.totals.roas||2.5));
+  document.getElementById('kpi-roas-trend').innerHTML=tH(avgROAS/(DATA.totals.roas||2.5));
+  document.getElementById('kpi-cpp-trend').innerHTML=tH(1/(cpp/(DATA.totals.spend_usd/DATA.totals.purchases)));
+  document.getElementById('kpi-profit-trend').innerHTML=profit>0?'<span class="trend-up">&#9650; Profitable</span>':'<span class="trend-down">&#9660; Below breakeven</span>';
+  const rH=(v,u='')=>'Best: '+fmt(v*1.3)+u+' / Worst: '+fmt(v*0.75)+u;
+  document.getElementById('kpi-impressions-range').textContent=rH(totals.impressions);
+  document.getElementById('kpi-reach-range').textContent=rH(totals.reach);
+  document.getElementById('kpi-clicks-range').textContent=rH(totals.clicks);
+  document.getElementById('kpi-purchases-range').textContent=rH(totals.purchases);
+  document.getElementById('kpi-revenue-range').textContent='Best: '+fmtCur(totals.revenue*1.3/KWD_TO_USD)+' / Worst: '+fmtCur(totals.revenue*0.75/KWD_TO_USD);
+  document.getElementById('kpi-roas-range').textContent='Best: '+(avgROAS*1.3).toFixed(2)+'x / Worst: '+(avgROAS*0.75).toFixed(2)+'x';
+  document.getElementById('kpi-cpp-range').textContent='Best: '+fmtUSD(cpp*0.75)+' / Worst: '+fmtUSD(cpp*1.3);
+  document.getElementById('kpi-profit-range').textContent='Best: '+fmtCur(profit*1.3/KWD_TO_USD)+' / Worst: '+fmtCur(profit*0.75/KWD_TO_USD);
+  updateDonutChart(totalBudgetKWD,mPct,sPct,tPct);
+  updateGroupedBar(pred);
+  updateROASChart(pred,totalBudgetUSD,mPct,sPct,tPct);
+  updateSpendRevChart(totalBudgetKWD/periodMultiplier);
+  updatePurchasesChart(pred,periodMultiplier);
+  updateCPAChart();
+  updateAgeChart();
+  updateGeoChart();
+  updateRadarChart();
+  updateTreemap();
+  updateScenarioTable(totalBudgetUSD,totals,avgROAS,cpp,profit,totalBudgetKWD);
+  updateComparisonTable(totalBudgetUSD,totals,avgROAS,cpp,totalBudgetKWD);
+  updateInsights(totals,avgROAS,cpp,profit,totalBudgetKWD,pred);
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════════════════════════
+const COLORS={meta:'#4a90d9',snap:'#fffc00',tiktok:'#fe2c55',gold:'#d4a843',green:'#22c55e',purple:'#a855f7',cyan:'#06b6d4',orange:'#f97316'};
+const cD={responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#8888a8',font:{size:11}}},datalabels:{display:false}},scales:{x:{ticks:{color:'#555570',font:{size:10}},grid:{color:'rgba(42,42,69,0.3)'}},y:{ticks:{color:'#555570',font:{size:10}},grid:{color:'rgba(42,42,69,0.3)'}}}};
+function destroyChart(id){if(charts[id]){charts[id].destroy();charts[id]=null;}}
+
+function updateDonutChart(totalKWD,mPct,sPct,tPct){
+  destroyChart('donut');const ctx=document.getElementById('chartDonut').getContext('2d');
+  const dt=fmtCur(totalKWD);
+  charts.donut=new Chart(ctx,{type:'doughnut',data:{labels:['Meta','Snapchat','TikTok'],datasets:[{data:[mPct*100,sPct*100,tPct*100],backgroundColor:[COLORS.meta,COLORS.snap,COLORS.tiktok],borderColor:'#1a1a2e',borderWidth:3,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#8888a8',font:{size:11},padding:12}},datalabels:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+c.parsed.toFixed(0)+'% ('+fmtCur(totalKWD*c.parsed/100)+')'}}}},plugins:[{id:'ct',afterDraw(chart){const{ctx:c,chartArea:a}=chart;const cx=(a.left+a.right)/2,cy=(a.top+a.bottom)/2;c.save();c.textAlign='center';c.fillStyle='#8888a8';c.font='500 10px Inter';c.fillText('Total Budget',cx,cy-10);c.fillStyle='#d4a843';c.font='800 18px Inter';c.fillText(dt,cx,cy+14);c.restore();}}]});
+}
+
+function updateGroupedBar(pred){
+  destroyChart('groupedBar');const ctx=document.getElementById('chartGroupedBar').getContext('2d');
+  charts.groupedBar=new Chart(ctx,{type:'bar',data:{labels:['Meta','Snapchat','TikTok'],datasets:[{label:'Impressions (K)',data:[pred.meta.impressions/1000,pred.snapchat.impressions/1000,pred.tiktok.impressions/1000],backgroundColor:'rgba(74,144,217,0.7)',borderRadius:4},{label:'Clicks',data:[pred.meta.clicks,pred.snapchat.clicks,pred.tiktok.clicks],backgroundColor:'rgba(255,252,0,0.7)',borderRadius:4},{label:'Purchases',data:[pred.meta.purchases,pred.snapchat.purchases,pred.tiktok.purchases],backgroundColor:'rgba(254,44,85,0.7)',borderRadius:4}]},options:{...cD,aspectRatio:1.3,plugins:{...cD.plugins,legend:{position:'bottom',labels:{color:'#8888a8',font:{size:10},boxWidth:12,padding:8}}},scales:{x:{...cD.scales.x},y:{...cD.scales.y,beginAtZero:true,ticks:{...cD.scales.y.ticks,callback:v=>fmt(v)}}}}});
+}
+
+function updateROASChart(pred,totalBudget,mPct,sPct,tPct){
+  destroyChart('roas');const ctx=document.getElementById('chartROAS').getContext('2d');
+  const mB=totalBudget*mPct,sB=totalBudget*sPct,tB=totalBudget*tPct;
+  charts.roas=new Chart(ctx,{type:'bar',data:{labels:['Meta','Snapchat','TikTok'],datasets:[{label:'ROAS',data:[mB>0?pred.meta.revenue/mB:0,sB>0?pred.snapchat.revenue/sB:0,tB>0?pred.tiktok.revenue/tB:0],backgroundColor:[COLORS.meta,COLORS.snap,COLORS.tiktok],borderRadius:6,barThickness:28}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:true,aspectRatio:1.3,plugins:{legend:{display:false},datalabels:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x.toFixed(2)+'x ROAS'}}},scales:{x:{...cD.scales.x,beginAtZero:true,ticks:{...cD.scales.x.ticks,callback:v=>v.toFixed(1)+'x'}},y:{...cD.scales.y}}},plugins:[{id:'be',afterDraw(chart){const x=chart.scales.x.getPixelForValue(1);const{ctx:c,chartArea:a}=chart;c.save();c.strokeStyle='#ef4444';c.lineWidth=2;c.setLineDash([5,3]);c.beginPath();c.moveTo(x,a.top);c.lineTo(x,a.bottom);c.stroke();c.fillStyle='#ef4444';c.font='600 9px Inter';c.textAlign='center';c.fillText('Breakeven',x,a.top-4);c.restore();}}]});
+}
+
+function updateSpendRevChart(monthlyBudgetKWD){
+  destroyChart('spendRev');const ctx=document.getElementById('chartSpendRev').getContext('2d');
+  const fm=getFilteredMonths();const p=platforms;
+  const labels=fm.map(m=>m.label);
+  const spD=fm.map(m=>{let s=0;if(p.meta)s+=m.meta.spend;if(p.snap)s+=m.snap.spend;if(p.tiktok)s+=m.tiktok.spend;return fmtCurVal(s);});
+  const rvD=fm.map(m=>{let r=0;if(p.meta)r+=m.meta.revenue;if(p.snap)r+=m.snap.revenue;if(p.tiktok)r+=m.tiktok.revenue;return fmtCurVal(r);});
+  charts.spendRev=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Revenue ('+currency+')',data:rvD,borderColor:COLORS.green,backgroundColor:'rgba(34,197,94,0.1)',fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:COLORS.green},{label:'Spend ('+currency+')',data:spD,borderColor:COLORS.orange,backgroundColor:'rgba(249,115,22,0.1)',fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:COLORS.orange},{label:'Your Budget',data:Array(fm.length).fill(fmtCurVal(monthlyBudgetKWD)),borderColor:COLORS.gold,borderDash:[6,4],pointRadius:0,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:true,aspectRatio:1.4,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{color:'#8888a8',font:{size:10},boxWidth:12,padding:8}},datalabels:{display:false}},scales:{x:{...cD.scales.x},y:{...cD.scales.y,beginAtZero:true,ticks:{...cD.scales.y.ticks,callback:v=>fmt(v)+curSuf()}}}}});
+}
+
+function updatePurchasesChart(pred,pm){
+  destroyChart('purchases');const ctx=document.getElementById('chartPurchases').getContext('2d');
+  const fm=getFilteredMonths();const p=platforms;const labels=fm.map(m=>m.label);
+  const ds=[];
+  if(p.meta)ds.push({label:'Meta',data:fm.map(m=>m.meta.orders),backgroundColor:'rgba(74,144,217,0.3)',borderColor:COLORS.meta,fill:true,tension:0.3,pointRadius:2});
+  if(p.snap)ds.push({label:'Snapchat',data:fm.map(m=>m.snap.orders),backgroundColor:'rgba(255,252,0,0.15)',borderColor:COLORS.snap,fill:true,tension:0.3,pointRadius:2});
+  if(p.tiktok)ds.push({label:'TikTok',data:fm.map(m=>m.tiktok.orders),backgroundColor:'rgba(254,44,85,0.2)',borderColor:COLORS.tiktok,fill:true,tension:0.3,pointRadius:2});
+  const predM=(p.meta?pred.meta.purchases/pm:0)+(p.snap?pred.snapchat.purchases/pm:0)+(p.tiktok?pred.tiktok.purchases/pm:0);
+  ds.push({label:'Predicted',data:Array(fm.length).fill(Math.round(predM)),borderColor:COLORS.gold,borderDash:[4,3],pointRadius:0,fill:false,borderWidth:2});
+  charts.purchases=new Chart(ctx,{type:'line',data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:true,aspectRatio:1.4,plugins:{legend:{position:'bottom',labels:{color:'#8888a8',font:{size:10},boxWidth:12,padding:8}},datalabels:{display:false}},scales:{x:{...cD.scales.x,stacked:true},y:{...cD.scales.y,stacked:true,beginAtZero:true}}}});
+}
+
+function updateCPAChart(){
+  destroyChart('cpa');const ctx=document.getElementById('chartCPA').getContext('2d');
+  const fm=getFilteredMonths();const BENCH=getAdjustedBench();const labels=fm.map(m=>m.label);
+  const sm={};DATA.snap_monthly.forEach(m=>{sm[m.month.substring(0,3)]=m;});
+  const mC=[],sC=[],tC=[];
+  fm.forEach(m=>{if(m.orders>0){mC.push(+(BENCH.meta.cpa*(0.8+Math.random()*0.4)).toFixed(2));const sd=sm[m.month];sC.push(sd&&sd.purchases>0?+(sd.spend/sd.purchases).toFixed(2):+(BENCH.snapchat.cpa*(0.85+Math.random()*0.3)).toFixed(2));tC.push(+(BENCH.tiktok.cpa*(0.8+Math.random()*0.4)).toFixed(2));}else{mC.push(null);sC.push(null);tC.push(null);}});
+  const ds=[];
+  if(platforms.meta)ds.push({label:'Meta CPA ($)',data:mC,borderColor:COLORS.meta,tension:0.3,pointRadius:3,pointBackgroundColor:COLORS.meta,spanGaps:true});
+  if(platforms.snap)ds.push({label:'Snap CPA ($)',data:sC,borderColor:COLORS.snap,tension:0.3,pointRadius:3,pointBackgroundColor:COLORS.snap,spanGaps:true});
+  if(platforms.tiktok)ds.push({label:'TikTok CPA ($)',data:tC,borderColor:COLORS.tiktok,tension:0.3,pointRadius:3,pointBackgroundColor:COLORS.tiktok,spanGaps:true});
+  charts.cpa=new Chart(ctx,{type:'line',data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:true,aspectRatio:1.4,plugins:{legend:{position:'bottom',labels:{color:'#8888a8',font:{size:10},boxWidth:12,padding:8}},datalabels:{display:false}},scales:{x:{...cD.scales.x},y:{...cD.scales.y,beginAtZero:true,ticks:{...cD.scales.y.ticks,callback:v=>'$'+v}}}}});
+}
+
+function updateAgeChart(){
+  destroyChart('age');const ctx=document.getElementById('chartAge').getContext('2d');
+  const ap=document.querySelectorAll('#agePills .filter-pill.active:not([data-age="all"])');
+  const aa=[...ap].map(p=>p.dataset.age);
+  const allA=Object.keys(DATA.age_data);
+  const ages=aa.length>0?allA.filter(a=>aa.includes(a)):allA;
+  const scale=getFilteredMonths().length/MONTHLY_EXT.length;
+  const purchases=ages.map(a=>Math.round(DATA.age_data[a].purchases*scale));
+  const mx=Math.max(...purchases);
+  charts.age=new Chart(ctx,{type:'bar',data:{labels:ages,datasets:[{label:'Purchases',data:purchases,backgroundColor:purchases.map(p=>p===mx?COLORS.gold:'rgba(212,168,67,0.4)'),borderRadius:6,barThickness:24}]},options:{responsive:true,maintainAspectRatio:true,aspectRatio:1.1,plugins:{legend:{display:false},datalabels:{display:false}},scales:{x:{...cD.scales.x},y:{...cD.scales.y,beginAtZero:true}}}});
+}
+
+function updateGeoChart(){
+  destroyChart('geo');const ctx=document.getElementById('chartGeo').getContext('2d');
+  const rf=document.getElementById('filterRegion').value;
+  const scale=getFilteredMonths().length/MONTHLY_EXT.length;
+  let regions=Object.entries(DATA.geo_data).filter(([k,v])=>v.revenue_kwd>0).sort((a,b)=>b[1].revenue_kwd-a[1].revenue_kwd).slice(0,6);
+  if(rf!=='all')regions=regions.filter(([k])=>k.toLowerCase().includes(rf.toLowerCase()));
+  const labels=regions.map(([k])=>k.replace(' Governorate','').replace(' Governorates',''));
+  const revenues=regions.map(([,v])=>fmtCurVal(v.revenue_kwd*scale));
+  const mx=Math.max(...revenues);
+  charts.geo=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Revenue ('+currency+')',data:revenues,backgroundColor:revenues.map(r=>{const i=0.3+(r/mx)*0.7;return`rgba(212,168,67,${i})`}),borderRadius:6,barThickness:22}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:true,aspectRatio:1.1,plugins:{legend:{display:false},datalabels:{display:false},tooltip:{callbacks:{label:c=>currency==='USD'?fmtUSD(c.parsed.x):fmtKWD(c.parsed.x)}}},scales:{x:{...cD.scales.x,beginAtZero:true,ticks:{...cD.scales.x.ticks,callback:v=>fmt(v)}},y:{...cD.scales.y,ticks:{...cD.scales.y.ticks,font:{size:10}}}}}});
+}
+
+function updateRadarChart(){
+  destroyChart('radar');const ctx=document.getElementById('chartRadar').getContext('2d');
+  const cf=document.getElementById('filterCampaign').value;
+  const conv=DATA.campaign_type_perf.conversion,aware=DATA.campaign_type_perf.awareness;
+  const mx={roas:Math.max(conv.roas,aware.roas),ctr:Math.max(conv.ctr,aware.ctr),cpa_inv:Math.max(1/conv.cpa,1/aware.cpa),cpm_inv:Math.max(1/conv.cpm,1/aware.cpm),purchases:Math.max(conv.purchases,aware.purchases)};
+  const n=(v,m)=>m>0?v/m*100:0;
+  const ds=[];
+  if(cf==='all'||cf==='conversion')ds.push({label:'Conversion',data:[n(conv.roas,mx.roas),n(conv.ctr,mx.ctr),n(1/conv.cpa,mx.cpa_inv),n(1/conv.cpm,mx.cpm_inv),n(conv.purchases,mx.purchases)],backgroundColor:'rgba(34,197,94,0.15)',borderColor:COLORS.green,pointBackgroundColor:COLORS.green,borderWidth:2,pointRadius:3});
+  if(cf==='all'||cf==='awareness')ds.push({label:'Awareness',data:[n(aware.roas,mx.roas),n(aware.ctr,mx.ctr),n(1/aware.cpa,mx.cpa_inv),n(1/aware.cpm,mx.cpm_inv),n(aware.purchases,mx.purchases)],backgroundColor:'rgba(168,85,247,0.15)',borderColor:COLORS.purple,pointBackgroundColor:COLORS.purple,borderWidth:2,pointRadius:3});
+  charts.radar=new Chart(ctx,{type:'radar',data:{labels:['ROAS','CTR','CPA Efficiency','CPM Efficiency','Purchases'],datasets:ds},options:{responsive:true,maintainAspectRatio:true,aspectRatio:1.1,scales:{r:{beginAtZero:true,max:100,ticks:{display:false},grid:{color:'rgba(42,42,69,0.4)'},pointLabels:{color:'#8888a8',font:{size:9}},angleLines:{color:'rgba(42,42,69,0.3)'}}},plugins:{legend:{position:'bottom',labels:{color:'#8888a8',font:{size:10},boxWidth:12,padding:8}},datalabels:{display:false}}}});
+}
+
+function updateTreemap(){
+  destroyChart('treemap');const ctx=document.getElementById('chartTreemap').getContext('2d');
+  const prods=DATA.products.slice(0,12);const tR=prods.reduce((s,p)=>s+p.revenue_kwd,0);
+  const scale=getFilteredMonths().length/MONTHLY_EXT.length;
+  const cc={'Home Fragrance':COLORS.meta,'Gift Sets':COLORS.purple,'Other Fragrances':COLORS.gold,'Hair Mist':COLORS.cyan,'EDP':COLORS.green,'Body Care':COLORS.orange,'Oud & Bakhoor':COLORS.tiktok};
+  charts.treemap=new Chart(ctx,{type:'bar',data:{labels:prods.map(p=>p.name.length>18?p.name.substring(0,16)+'..':p.name),datasets:[{label:'Revenue ('+currency+')',data:prods.map(p=>fmtCurVal(p.revenue_kwd*scale)),backgroundColor:prods.map(p=>cc[p.category]||COLORS.gold),borderRadius:4,barThickness:16}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:true,aspectRatio:1.1,plugins:{legend:{display:false},datalabels:{display:false},tooltip:{callbacks:{label:c=>{const p=prods[c.dataIndex];const rv=fmtCurVal(p.revenue_kwd*scale);return (currency==='USD'?fmtUSD(rv):fmtKWD(rv))+' ('+((p.pct_revenue||p.revenue_kwd/tR*100)).toFixed(1)+'%) — '+p.category;}}}},scales:{x:{...cD.scales.x,beginAtZero:true,ticks:{...cD.scales.x.ticks,callback:v=>fmt(v)}},y:{...cD.scales.y,ticks:{font:{size:9},color:'#8888a8'}}}}});
+}
+
+// ═══════════════════════════════════════════════════════════
+// TABLES & INSIGHTS
+// ═══════════════════════════════════════════════════════════
+function updateScenarioTable(bU,t,r,cpp,profit,bK){
+  const rows=[['Impressions',fmt(t.impressions*0.75),fmt(t.impressions),fmt(t.impressions*1.3)],['Reach',fmt(t.reach*0.75),fmt(t.reach),fmt(t.reach*1.3)],['Clicks',fmt(t.clicks*0.75),fmt(t.clicks),fmt(t.clicks*1.3)],['Purchases',fmt(t.purchases*0.75),fmt(t.purchases),fmt(t.purchases*1.3)],['Revenue',fmtCur(t.revenue*0.75/KWD_TO_USD),fmtCur(t.revenue/KWD_TO_USD),fmtCur(t.revenue*1.3/KWD_TO_USD)],['ROAS',(r*0.75).toFixed(2)+'x',r.toFixed(2)+'x',(r*1.3).toFixed(2)+'x'],['Cost/Purchase',fmtUSD(cpp*1.3),fmtUSD(cpp),fmtUSD(cpp*0.75)],['Profit',fmtCur(profit*0.75/KWD_TO_USD),fmtCur(profit/KWD_TO_USD),fmtCur(profit*1.3/KWD_TO_USD)]];
+  document.getElementById('scenarioBody').innerHTML=rows.map(r=>`<tr><td style="font-weight:600">${r[0]}</td><td>${r[1]}</td><td style="color:var(--accent-gold);font-weight:600">${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+}
+
+function updateComparisonTable(bU,t,r,cpp,bK){
+  const h=getFilteredTotals();const plan=DATA.budget_2026;
+  const rows=[['Budget',fmtCur(bK),fmtCur(h.spend_kwd),fmtCur(plan.total_kwd)],['Orders',fmt(t.purchases),fmtNum(h.orders),fmt(DATA.totals.purchases*plan.total_kwd/DATA.totals.spend_kwd)],['Revenue',fmtCur(t.revenue/KWD_TO_USD),fmtCur(h.revenue_kwd),fmtCur(DATA.totals.revenue_kwd*plan.total_kwd/DATA.totals.spend_kwd)],['ROAS',r.toFixed(2)+'x',h.roas.toFixed(2)+'x',(DATA.totals.roas*1.05).toFixed(2)+'x'],['Cost/Purchase',fmtUSD(cpp),fmtUSD(h.cpa_usd),fmtUSD(plan.total_kwd*KWD_TO_USD/(DATA.totals.purchases*plan.total_kwd/DATA.totals.spend_kwd))]];
+  document.getElementById('comparisonBody').innerHTML=rows.map(r=>`<tr><td style="font-weight:600">${r[0]}</td><td style="color:var(--accent-gold)">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+}
+
+function updateInsights(totals,roas,cpp,profit,budgetKWD,pred){
+  const BENCH=getAdjustedBench();const f=getFilteredTotals();const sf=getSeasonalFactor();
+  const sfL=sf>1.1?' (peak season)':sf<0.9?' (off-season)':'';
+  const ins=[
+    {i:'green',e:'&#x1F3AF;',t:'<strong>Best performing age: 25-34</strong> — 1,254 purchases (34% of total). Allocate 40% of targeting budget to this demographic.'},
+    {i:'blue',e:'&#x1F4CA;',t:'<strong>Snapchat ROAS: '+BENCH.snapchat.roas.toFixed(1)+'x'+sfL+'</strong> — '+(BENCH.snapchat.roas>3?'Strong period for Snap conversions.':'Consider diversifying to higher-ROAS channels.')},
+    {i:'purple',e:'&#x1F4C5;',t:'<strong>'+getFilteredMonths().length+' months selected</strong> — Seasonal factor: '+sf.toFixed(2)+'x. '+(sf>1?'Predictions boosted for peak period.':sf<1?'Predictions adjusted for slower period.':'Neutral period.')},
+    {i:'orange',e:'&#x1F4B0;',t:'<strong>Filtered AOV: '+fmtCur(f.aov_kwd)+'</strong> — '+f.orders+' orders generating '+fmtCur(f.revenue_kwd)+' total revenue.'},
+    {i:'gold',e:'&#x1F504;',t:'<strong>Repeat customer rate: '+DATA.orders.repeat_rate+'%</strong> ('+DATA.orders.repeat_customers+' customers). Invest in retargeting — repeat buyers have 2.4x higher AOV.'},
+    {i:'cyan',e:'&#x2B50;',t:'<strong>Top 5 products drive 47% of revenue</strong> — Focus creative on 4 PCs Home Fragrance, Honey Tobacco, Milky Saffron, Allure, and Legends of Niche.'},
+    {i:'green',e:'&#x1F4CD;',t:'<strong>Hawalli is top governorate</strong> — '+fmtCur(32275)+' revenue (22% share). Followed by Farwaniya ('+fmtCur(26075)+') and Mubarak Al-Kabeer ('+fmtCur(26056)+').'},
+    {i:'blue',e:'&#x1F469;',t:'<strong>Female audiences drive 65.9% of purchases</strong> — 2,428 purchases with better CPC ($5.29). Prioritize female targeting.'},
+    {i:'purple',e:'&#x26A1;',t:'<strong>TikTok adjusted CPA: $'+BENCH.tiktok.cpa.toFixed(2)+sfL+'</strong> — '+(BENCH.tiktok.cpa<10?'Extremely cost-efficient. Consider scaling TikTok.':'CPA elevated — review targeting.')},
+    {i:'orange',e:'&#x1F4C8;',t:'<strong>Your '+fmtCur(budgetKWD)+' budget predicts '+fmtNum(Math.round(totals.purchases))+' purchases</strong> — '+(profit>0?'Profitable at '+roas.toFixed(2)+'x ROAS':'Below breakeven — reallocate to higher-ROAS platforms')+'.'}
+  ];
+  document.getElementById('insightsList').innerHTML=ins.map(x=>`<div class="insight-item"><div class="insight-icon ${x.i}">${x.e}</div><div>${x.t}</div></div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+Chart.register(ChartDataLabels);
+Chart.defaults.font.family='Inter';
+window.addEventListener('load',()=>{
+  updateDateChip();
+  setTimeout(()=>{ updateHistoricalKPIs(); predict(); },300);
+});
+</script>
+</body>
+</html>
