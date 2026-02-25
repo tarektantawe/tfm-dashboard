@@ -188,6 +188,58 @@ body { font-family:'Inter',sans-serif; background:var(--bg-primary); color:var(-
 .kpi-card,.chart-card,.table-card,.insights-panel { animation:fadeIn 0.4s ease-out; }
 
 @media (max-width:740px) { .cal-dropdown { flex-direction:column; } .cal-presets { width:100%; border-right:none; border-bottom:1px solid var(--border); max-height:160px; } }
+
+/* ═══════════════════════ AI PANEL ═══════════════════════ */
+.ai-section { margin-top:16px; }
+.ai-key-bar { display:flex; align-items:center; gap:10px; margin-bottom:16px; padding:12px 16px; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; flex-wrap:wrap; }
+.ai-key-bar label { font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:1px; white-space:nowrap; }
+.ai-key-input { flex:1; min-width:200px; padding:8px 12px; font-size:12px; font-family:'Inter',monospace; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); outline:none; }
+.ai-key-input:focus { border-color:var(--accent-gold); box-shadow:0 0 0 3px var(--accent-gold-dim); }
+.ai-key-input::placeholder { color:var(--text-muted); }
+.ai-key-status { font-size:10px; font-weight:600; padding:4px 10px; border-radius:12px; white-space:nowrap; }
+.ai-key-status.connected { background:rgba(34,197,94,0.15); color:var(--green); }
+.ai-key-status.disconnected { background:rgba(239,68,68,0.15); color:var(--red); }
+
+.ai-insights-btn { padding:8px 20px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; border:none; border-radius:8px; cursor:pointer; background:linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; transition:all 0.3s; white-space:nowrap; }
+.ai-insights-btn:hover { transform:translateY(-1px); box-shadow:0 4px 20px rgba(168,85,247,0.3); }
+.ai-insights-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; box-shadow:none; }
+
+.ai-insights-box { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:16px; display:none; }
+.ai-insights-box.visible { display:block; }
+.ai-insights-box h3 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--purple); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.ai-insights-content { font-size:13px; line-height:1.7; color:var(--text-primary); }
+.ai-insights-content strong { color:var(--accent-gold); }
+.ai-insights-content ul { margin:8px 0; padding-left:20px; }
+.ai-insights-content li { margin-bottom:4px; }
+.ai-loading { display:flex; align-items:center; gap:8px; color:var(--text-secondary); font-size:13px; }
+.ai-loading .dot-pulse { display:inline-flex; gap:4px; }
+.ai-loading .dot-pulse span { width:6px; height:6px; border-radius:50%; background:var(--purple); animation:dotPulse 1.4s infinite ease-in-out; }
+.ai-loading .dot-pulse span:nth-child(2) { animation-delay:0.2s; }
+.ai-loading .dot-pulse span:nth-child(3) { animation-delay:0.4s; }
+@keyframes dotPulse { 0%,80%,100% { opacity:0.3; transform:scale(0.8); } 40% { opacity:1; transform:scale(1.2); } }
+
+/* Chat */
+.ai-chat-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.ai-chat-header { padding:14px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.ai-chat-header h3 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--purple); margin:0; }
+.ai-chat-header .model-badge { font-size:9px; font-weight:600; padding:2px 8px; border-radius:10px; background:rgba(168,85,247,0.15); color:var(--purple); }
+.ai-chat-messages { max-height:400px; overflow-y:auto; padding:16px 20px; display:flex; flex-direction:column; gap:12px; }
+.ai-msg { max-width:85%; padding:10px 14px; border-radius:12px; font-size:13px; line-height:1.6; word-wrap:break-word; }
+.ai-msg.user { align-self:flex-end; background:linear-gradient(135deg,var(--accent-gold),#c49530); color:#000; border-bottom-right-radius:4px; font-weight:500; }
+.ai-msg.assistant { align-self:flex-start; background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-primary); border-bottom-left-radius:4px; }
+.ai-msg.assistant strong { color:var(--accent-gold); }
+.ai-msg.system { align-self:center; color:var(--text-muted); font-size:11px; font-style:italic; background:none; padding:4px; }
+.ai-msg.error { align-self:center; color:var(--red); font-size:12px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); }
+.ai-chat-input-row { display:flex; gap:8px; padding:12px 20px; border-top:1px solid var(--border); background:var(--bg-secondary); }
+.ai-chat-input { flex:1; padding:10px 14px; font-size:13px; font-family:'Inter',sans-serif; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); outline:none; resize:none; }
+.ai-chat-input:focus { border-color:var(--accent-gold); }
+.ai-chat-input::placeholder { color:var(--text-muted); }
+.ai-chat-send { padding:10px 20px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; border:none; border-radius:8px; cursor:pointer; background:linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; transition:all 0.2s; white-space:nowrap; }
+.ai-chat-send:hover { opacity:0.9; }
+.ai-chat-send:disabled { opacity:0.5; cursor:not-allowed; }
+.ai-suggestions { display:flex; gap:6px; flex-wrap:wrap; padding:0 20px 12px; }
+.ai-suggestion { padding:5px 12px; font-size:11px; font-weight:500; background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.2); border-radius:16px; color:var(--purple); cursor:pointer; transition:all 0.2s; }
+.ai-suggestion:hover { background:rgba(168,85,247,0.15); border-color:var(--purple); }
 </style>
 </head>
 <body>
@@ -366,6 +418,44 @@ body { font-family:'Inter',sans-serif; background:var(--bg-primary); color:var(-
   </div>
 </div>
 <div class="insights-panel"><h3>Smart Insights</h3><div id="insightsList"></div></div>
+
+<!-- AI INTELLIGENCE SECTION -->
+<div class="ai-section">
+<div class="section-title">AI-Powered Intelligence <span class="date-range-label">Powered by Claude</span></div>
+
+<div class="ai-key-bar">
+  <label>Claude API Key</label>
+  <input type="password" class="ai-key-input" id="aiKeyInput" placeholder="sk-ant-api03-..." oninput="saveAIKey()" />
+  <span class="ai-key-status disconnected" id="aiKeyStatus">No Key</span>
+  <button class="ai-insights-btn" onclick="generateAIInsights()" id="aiInsightsBtn" disabled>Generate AI Insights</button>
+</div>
+
+<div class="ai-insights-box" id="aiInsightsBox">
+  <h3>&#x1F9E0; Claude AI Analysis</h3>
+  <div class="ai-insights-content" id="aiInsightsContent"></div>
+</div>
+
+<div class="ai-chat-panel">
+  <div class="ai-chat-header">
+    <h3>&#x1F4AC; Ask Claude About Your Data</h3>
+    <span class="model-badge">Claude Sonnet</span>
+  </div>
+  <div class="ai-chat-messages" id="aiChatMessages">
+    <div class="ai-msg system">Ask anything about your campaign data, budgets, or strategy. Claude can see your current filters and dashboard data.</div>
+  </div>
+  <div class="ai-suggestions" id="aiSuggestions">
+    <span class="ai-suggestion" onclick="askSuggestion(this)">What's my best performing platform?</span>
+    <span class="ai-suggestion" onclick="askSuggestion(this)">How should I allocate my budget?</span>
+    <span class="ai-suggestion" onclick="askSuggestion(this)">What trends do you see in my data?</span>
+    <span class="ai-suggestion" onclick="askSuggestion(this)">Recommend a scaling strategy</span>
+  </div>
+  <div class="ai-chat-input-row">
+    <input type="text" class="ai-chat-input" id="aiChatInput" placeholder="Ask Claude about your campaign performance..." onkeydown="if(event.key==='Enter')askClaude()" />
+    <button class="ai-chat-send" onclick="askClaude()" id="aiChatSend">Send</button>
+  </div>
+</div>
+</div>
+
 </div>
 
 <script>
@@ -936,12 +1026,246 @@ function updateInsights(totals,roas,cpp,profit,budgetKWD,pred){
 }
 
 // ═══════════════════════════════════════════════════════════
+// CLAUDE AI INTEGRATION
+// ═══════════════════════════════════════════════════════════
+let aiChatHistory = [];
+
+function getAIKey() {
+  return document.getElementById('aiKeyInput').value.trim() || localStorage.getItem('tfm_claude_key') || '';
+}
+
+function saveAIKey() {
+  const key = document.getElementById('aiKeyInput').value.trim();
+  const status = document.getElementById('aiKeyStatus');
+  const btn = document.getElementById('aiInsightsBtn');
+  if (key && key.startsWith('sk-ant-')) {
+    localStorage.setItem('tfm_claude_key', key);
+    status.textContent = 'Connected';
+    status.className = 'ai-key-status connected';
+    btn.disabled = false;
+  } else if (key) {
+    status.textContent = 'Invalid Key';
+    status.className = 'ai-key-status disconnected';
+    btn.disabled = true;
+  } else {
+    status.textContent = 'No Key';
+    status.className = 'ai-key-status disconnected';
+    btn.disabled = true;
+  }
+}
+
+function loadAIKey() {
+  const saved = localStorage.getItem('tfm_claude_key');
+  if (saved) {
+    document.getElementById('aiKeyInput').value = saved;
+    saveAIKey();
+  }
+}
+
+function buildDashboardContext() {
+  const f = getFilteredTotals();
+  const fm = getFilteredMonths();
+  const allTime = getAllTimeTotals();
+  const sf = getSeasonalFactor();
+  const budgetKWD = parseInt(document.getElementById('budgetInput').value.replace(/[^0-9]/g, '')) || 5000;
+  const platStatus = [];
+  if (platforms.meta) platStatus.push('Meta: ON');
+  if (platforms.snap) platStatus.push('Snap: ON');
+  if (platforms.tiktok) platStatus.push('TikTok: ON');
+
+  return `You are an expert digital marketing analyst for TFM (The Fragrance Man), a Kuwait-based luxury fragrance e-commerce brand.
+
+CURRENT DASHBOARD STATE:
+- Date range: ${fmtRangeShort(calStart, calEnd)}
+- Active platforms: ${platStatus.join(', ')}
+- Currency: ${currency}
+- Budget input: ${budgetKWD.toLocaleString()} KWD (${(budgetKWD * KWD_TO_USD).toLocaleString()} USD)
+- Period: ${currentPeriod}
+
+FILTERED HISTORICAL DATA (${fm.length} months):
+- Total orders: ${f.orders.toLocaleString()}
+- Revenue: ${Math.round(f.revenue_kwd).toLocaleString()} KWD (${Math.round(f.revenue_kwd * KWD_TO_USD).toLocaleString()} USD)
+- Ad spend: ${Math.round(f.spend_kwd).toLocaleString()} KWD (${Math.round(f.spend_kwd * KWD_TO_USD).toLocaleString()} USD)
+- ROAS: ${f.roas.toFixed(2)}x
+- AOV: ${f.aov_kwd.toFixed(2)} KWD
+- CPA: $${f.cpa_usd.toFixed(2)}
+- Items sold: ${f.items.toLocaleString()}
+- Unique customers: ${f.customers.toLocaleString()}
+- Seasonal factor: ${sf.toFixed(2)}x
+
+ALL-TIME TOTALS:
+- Revenue: ${Math.round(allTime.revenue_kwd).toLocaleString()} KWD
+- Spend: ${Math.round(allTime.spend_kwd).toLocaleString()} KWD
+- ROAS: ${allTime.roas.toFixed(2)}x
+
+MONTHLY BREAKDOWN (filtered):
+${fm.map(m => `${m.label}: Orders=${m.orders}, Rev=${Math.round(m.revenue_kwd)} KWD, Spend=${Math.round(m.spend_kwd)} KWD, Meta(${m.meta.orders}/${m.meta.revenue}/${m.meta.spend}), Snap(${m.snap.orders}/${m.snap.revenue}/${m.snap.spend}), TikTok(${m.tiktok.orders}/${m.tiktok.revenue}/${m.tiktok.spend})`).join('\n')}
+
+PLATFORM BENCHMARKS:
+- Meta: ROAS=${BENCH_BASE.meta.roas}x, CPA=$${BENCH_BASE.meta.cpa}, CPM=$${BENCH_BASE.meta.cpm}, CTR=${BENCH_BASE.meta.ctr}%
+- Snapchat: ROAS=${BENCH_BASE.snapchat.roas}x, CPA=$${BENCH_BASE.snapchat.cpa}, CPM=$${BENCH_BASE.snapchat.cpm}, CTR=${BENCH_BASE.snapchat.ctr}%
+- TikTok: ROAS=${BENCH_BASE.tiktok.roas}x, CPA=$${BENCH_BASE.tiktok.cpa}, CPM=$${BENCH_BASE.tiktok.cpm}, CTR=${BENCH_BASE.tiktok.ctr}%
+
+DEMOGRAPHICS:
+- Gender: Female 65.9% of purchases (2,428), Male 34.1% (1,258)
+- Top age group: 25-34 (34%)
+- Top region: Hawalli (22% revenue)
+
+KEY PRODUCTS: ${DATA.products.slice(0,8).map(p => p.name + ' (' + p.revenue_kwd.toFixed(0) + ' KWD, ' + p.category + ')').join(', ')}
+
+Answer concisely with actionable insights. Use numbers from the data. Format with bold for key metrics. Provide specific recommendations.`;
+}
+
+async function callClaudeAPI(systemPrompt, userMessage) {
+  const key = getAIKey();
+  if (!key) throw new Error('Please enter your Claude API key first.');
+
+  const messages = [...aiChatHistory, { role: 'user', content: userMessage }];
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: messages
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    if (response.status === 401) throw new Error('Invalid API key. Check your key and try again.');
+    if (response.status === 429) throw new Error('Rate limited. Wait a moment and try again.');
+    throw new Error(err.error?.message || 'API error: ' + response.status);
+  }
+
+  const data = await response.json();
+  const text = data.content[0].text;
+  return text;
+}
+
+function formatAIResponse(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n- /g, '<br>&bull; ')
+    .replace(/\n\d+\. /g, function(m) { return '<br>' + m.trim() + ' '; })
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>')
+    .replace(/`(.*?)`/g, '<code style="background:rgba(168,85,247,0.15);padding:1px 5px;border-radius:3px;font-size:12px">$1</code>');
+}
+
+async function generateAIInsights() {
+  const box = document.getElementById('aiInsightsBox');
+  const content = document.getElementById('aiInsightsContent');
+  const btn = document.getElementById('aiInsightsBtn');
+
+  box.classList.add('visible');
+  btn.disabled = true;
+  btn.textContent = 'Analyzing...';
+  content.innerHTML = '<div class="ai-loading">Claude is analyzing your data <div class="dot-pulse"><span></span><span></span><span></span></div></div>';
+
+  try {
+    const ctx = buildDashboardContext();
+    const prompt = `Analyze this TFM dashboard data and provide 5-7 KEY strategic insights. For each insight:
+1. Start with a bold metric or finding
+2. Explain what it means for the business
+3. Give a specific, actionable recommendation
+
+Focus on: budget optimization, platform performance gaps, seasonal patterns, audience targeting opportunities, and scaling strategies. Be specific with numbers.`;
+
+    const response = await callClaudeAPI(ctx, prompt);
+    content.innerHTML = formatAIResponse(response);
+  } catch (err) {
+    content.innerHTML = '<div style="color:var(--red)">' + err.message + '</div>';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Generate AI Insights';
+}
+
+function appendChatMessage(role, text) {
+  const div = document.createElement('div');
+  div.className = 'ai-msg ' + role;
+  if (role === 'assistant') {
+    div.innerHTML = formatAIResponse(text);
+  } else if (role === 'error') {
+    div.textContent = text;
+  } else {
+    div.textContent = text;
+  }
+  const container = document.getElementById('aiChatMessages');
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+async function askClaude() {
+  const input = document.getElementById('aiChatInput');
+  const sendBtn = document.getElementById('aiChatSend');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const key = getAIKey();
+  if (!key) {
+    appendChatMessage('error', 'Please enter your Claude API key above first.');
+    return;
+  }
+
+  input.value = '';
+  appendChatMessage('user', text);
+  sendBtn.disabled = true;
+
+  // Hide suggestions after first message
+  const sugg = document.getElementById('aiSuggestions');
+  if (sugg) sugg.style.display = 'none';
+
+  const loadingDiv = appendChatMessage('assistant', '');
+  loadingDiv.innerHTML = '<div class="ai-loading">Thinking <div class="dot-pulse"><span></span><span></span><span></span></div></div>';
+
+  try {
+    const ctx = buildDashboardContext();
+    aiChatHistory.push({ role: 'user', content: text });
+
+    const response = await callClaudeAPI(ctx, text);
+
+    aiChatHistory.push({ role: 'assistant', content: response });
+    loadingDiv.innerHTML = formatAIResponse(response);
+  } catch (err) {
+    loadingDiv.className = 'ai-msg error';
+    loadingDiv.textContent = err.message;
+  }
+
+  sendBtn.disabled = false;
+  input.focus();
+  document.getElementById('aiChatMessages').scrollTop = document.getElementById('aiChatMessages').scrollHeight;
+}
+
+function askSuggestion(el) {
+  document.getElementById('aiChatInput').value = el.textContent;
+  askClaude();
+}
+
+// Keep chat history manageable (last 10 messages)
+function trimChatHistory() {
+  if (aiChatHistory.length > 20) {
+    aiChatHistory = aiChatHistory.slice(-20);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
 Chart.register(ChartDataLabels);
 Chart.defaults.font.family='Inter';
 window.addEventListener('load',()=>{
   updateDateChip();
+  loadAIKey();
   setTimeout(()=>{ updateHistoricalKPIs(); predict(); },300);
 });
 </script>
