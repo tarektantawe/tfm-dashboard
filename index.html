@@ -4,9 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TFM Budget Predictor & Campaign Intelligence</title>
-<link rel="icon" type="image/png" href="data:image/png;base64,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" />
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAFJElEQVR4nO1XW29UVRRee5/LnDlnLm1nhpmWoTQpUAgQoMRoIDVIQgCRF028EaM++uSLP8Af4LsPxhdjjMaEByXUSFUMtQoYamMIlwZLh96mc+nMdObc999mzXRgCq1pxdDEsJKdzJmzz1rfXuv71jqH6HpUwAYa3cjgTwH8vzJA0BmBOqEJaagnBoAQAMYFVC1OhABwXAGuJ9YEQv4vgnueACMo+a+8EJtNxlSbMUHPDec7J7OOHlAIIKjmXgAQQtQTtnoGyFI6KV1aBARprEeC+0xANCS777++ZbxY8ZXPzs9uvThaip852ZlpC8keY6Lhi4CwXQ62y5e5oSudyOcCajYnVZORqslJ1WLEcjjx/MZRmg5xYYA3jyfvDV0pbhr8JZeyHKGO3SxHJ2et4N5eo2y7AmxP1H3t7Q2Vjxxoz7n+g/LIDwfH2rWHZW9nj1GORxVXkkCYFpeyC642m3eCxUU/YDqNWgvGoXeLbuLv4dFSTNdlqFkM9myPVNDH1z9UYppKxPZuvTKwr60Q0iX/3KV8J205Nmm2YkwxBt+/PVQ6dTievTlZNeYKnuYzQUNByd/UododEdmTJSpyJVfNlz11as7W+neGKxWTyT9eXUjoGsX6ij29RlkPSExVCOvpClo1i0mXr5c7xsZr7VwI0FT6gBd6yyywHA7JDsX1fEELJU8mtMkaAEQdUCjIMmH7d4QXOmOKLVMqDu2LLoxnTAO3NQ9VrvlypcbkbMHV7kyb4fkFT8UbwUDj6M3g90uA11jPgQNthWs3FmMe4yRkyPc1jRsshxEkXH9fuDSwP1r46PNMH5KsIyK7H5+d7tUCVHABBDmBkmS8QWZVJs3Ay9i/DAAFAM8XZGBftPDXlBmeybOALIl6QCyLRAH29oZKzx9oK3QnNWs6Z2uuw+DokUT2zoxt8Lr2OZEkAopMQAHSUAzyRECdL0vighUBEALC9wW59Ec59tqxVObTb6Z7XE/IUUP2+rr1yjO7owv49Nmfsl39uyKlGxO1CD7UldCs8yPTvejj6MH2+TszVigz5+iqQgjnK4VbBQAXQIIahV//LMeDAcLeezk9YdqMyjIVuaIbGBzJp27cNcPRkMROPNeRkykR/X2RUndSs48ebJ/d1WPUNicD9oefTOzCbN1nwxqMtJIQT2k6HMK6xHWNskWTKTWLg6oQLBGcOZ7KeD6ntydrxjunN09991shMV9wAq8eS858eSGbHr1VjYaCDS6sFQBtvUAkhkYFqmCh4iuYxoghCc4FbEtrtW3poPnVhWzadIVyO1MzBofnU6bDlclZOzg2vv7gjwBAQwdIICQUSs+0GdFUyt4+1TX5xfdz6YBKxFsnU5nzI/mUokji9EB8ZuhqMYmKFasQbV0Alk04JiDeptgfnNk6PnSlmLh9txp696XNdy9fr7RPTFn61i7Nsh0uTczYRqCluazH6D/cEx4T0J3SrKGrxcTF34uJN0503UPFDI4UOiWFQliXvdKir6Bc/827ANqq4xj1iy1z9Fa1HTkQCiliOu8Evx3OpVHrqP3peUd/8VBsDvfh8MKmU29ABECWyPpVsJK1znAcp5hqTBtmAofSqcPx2R1pvXb252xn1WKKoUnYCMl80dXoUit/LACthkEfbqcoz2d3R/IHd4bL2PgUmYprNyttw2PlhKqQFdvvMp/6Y36YYIYsmwOeFt9+kDdIRizHWhzL8JiGwepjGBo9H/nR/B+eBAC01uazXilS2GCjTwHABtvfypSakJs5V04AAAAASUVORK5CYII=">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAFJElEQVR4nO1XW29UVRRee5/LnDlnLm1nhpmWoTQpUAgQoMRoIDVIQgCRF028EaM++uSLP8Af4LsPxhdjjMaEByXUSFUMtQoYamMIlwZLh96mc+nMdObc999mzXRgCq1pxdDEsJKdzJmzz1rfXuv71jqH6HpUwAYa3cjgTwH8vzJA0BmBOqEJaagnBoAQAMYFVC1OhABwXAGuJ9YEQv4vgnueACMo+a+8EJtNxlSbMUHPDec7J7OOHlAIIKjmXgAQQtQTtnoGyFI6KV1aBARprEeC+0xANCS777++ZbxY8ZXPzs9uvThaip852ZlpC8keY6Lhi4CwXQ62y5e5oSudyOcCajYnVZORqslJ1WLEcjjx/MZRmg5xYYA3jyfvDV0pbhr8JZeyHKGO3SxHJ2et4N5eo2y7AmxP1H3t7Q2Vjxxoz7n+g/LIDwfH2rWHZW9nj1GORxVXkkCYFpeyC642m3eCxUU/YDqNWgvGoXeLbuLv4dFSTNdlqFkM9myPVNDH1z9UYppKxPZuvTKwr60Q0iX/3KV8J205Nmm2YkwxBt+/PVQ6dTievTlZNeYKnuYzQUNByd/UododEdmTJSpyJVfNlz11as7W+neGKxWTyT9eXUjoGsX6ij29RlkPSExVCOvpClo1i0mXr5c7xsZr7VwI0FT6gBd6yyywHA7JDsX1fEELJU8mtMkaAEQdUCjIMmH7d4QXOmOKLVMqDu2LLoxnTAO3NQ9VrvlypcbkbMHV7kyb4fkFT8UbwUDj6M3g90uA11jPgQNthWs3FmMe4yRkyPc1jRsshxEkXH9fuDSwP1r46PNMH5KsIyK7H5+d7tUCVHABBDmBkmS8QWZVJs3Ay9i/DAAFAM8XZGBftPDXlBmeybOALIl6QCyLRAH29oZKzx9oK3QnNWs6Z2uuw+DokUT2zoxt8Lr2OZEkAopMQAHSUAzyRECdL0vighUBEALC9wW59Ec59tqxVObTb6Z7XE/IUUP2+rr1yjO7owv49Nmfsl39uyKlGxO1CD7UldCs8yPTvejj6MH2+TszVigz5+iqQgjnK4VbBQAXQIIahV//LMeDAcLeezk9YdqMyjIVuaIbGBzJp27cNcPRkMROPNeRkykR/X2RUndSs48ebJ/d1WPUNicD9oefTOzCbN1nwxqMtJIQT2k6HMK6xHWNskWTKTWLg6oQLBGcOZ7KeD6ntydrxjunN09991shMV9wAq8eS858eSGbHr1VjYaCDS6sFQBtvUAkhkYFqmCh4iuYxoghCc4FbEtrtW3poPnVhWzadIVyO1MzBofnU6bDlclZOzg2vv7gjwBAQwdIICQUSs+0GdFUyt4+1TX5xfdz6YBKxFsnU5nzI/mUokji9EB8ZuhqMYmKFasQbV0Alk04JiDeptgfnNk6PnSlmLh9txp696XNdy9fr7RPTFn61i7Nsh0uTczYRqCluazH6D/cEx4T0J3SrKGrxcTF34uJN0503UPFDI4UOiWFQliXvdKir6Bc/827ANqq4xj1iy1z9Fa1HTkQCiliOu8Evx3OpVHrqP3peUd/8VBsDvfh8MKmU29ABECWyPpVsJK1znAcp5hqTBtmAofSqcPx2R1pvXb252xn1WKKoUnYCMl80dXoUit/LACthkEfbqcoz2d3R/IHd4bL2PgUmYprNyttw2PlhKqQFdvvMp/6Y36YYIYsmwOeFt9+kDdIRizHWhzL8JiGwepjGBo9H/nR/B+eBAC01uazXilS2GCjTwHABtvfypSakJs5V04AAAAASUVORK5CYII=">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 :root {
@@ -241,6 +244,48 @@ body { font-family:'Inter',sans-serif; background:var(--bg-primary); color:var(-
 .ai-suggestions { display:flex; gap:6px; flex-wrap:wrap; padding:0 20px 12px; }
 .ai-suggestion { padding:5px 12px; font-size:11px; font-weight:500; background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.2); border-radius:16px; color:var(--purple); cursor:pointer; transition:all 0.2s; }
 .ai-suggestion:hover { background:rgba(168,85,247,0.15); border-color:var(--purple); }
+
+/* ═══════════════════════ FUNNEL ═══════════════════════ */
+.funnel-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:24px 30px; margin-bottom:16px; }
+.funnel-card h3 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary); margin-bottom:20px; }
+.funnel { display:flex; flex-direction:column; gap:6px; align-items:center; }
+.funnel-step { display:flex; align-items:center; gap:14px; width:100%; max-width:700px; }
+.funnel-label { width:110px; text-align:right; font-size:12px; font-weight:600; color:var(--text-secondary); flex-shrink:0; }
+.funnel-bar-wrap { flex:1; height:38px; background:var(--bg-secondary); border-radius:8px; overflow:hidden; position:relative; }
+.funnel-bar { height:100%; border-radius:8px; display:flex; align-items:center; justify-content:flex-end; padding-right:12px; transition:width 1.2s cubic-bezier(0.25,0.46,0.45,0.94); width:0; }
+.funnel-bar span { font-size:12px; font-weight:700; color:#000; white-space:nowrap; }
+.funnel-bar.bar-impressions { background:linear-gradient(90deg,#4a90d9,#6ba3e0); }
+.funnel-bar.bar-reach { background:linear-gradient(90deg,#a855f7,#c084fc); }
+.funnel-bar.bar-clicks { background:linear-gradient(90deg,#f97316,#fb923c); }
+.funnel-bar.bar-purchases { background:linear-gradient(90deg,#22c55e,#4ade80); }
+.funnel-bar.bar-revenue { background:linear-gradient(90deg,#d4a843,#f0d78c); }
+.funnel-value { width:100px; font-size:13px; font-weight:700; color:var(--text-primary); flex-shrink:0; }
+.funnel-rate { font-size:10px; color:var(--text-muted); margin-top:2px; }
+.funnel-arrow { color:var(--text-muted); font-size:14px; text-align:center; padding:2px 0; }
+
+/* ═══════════════════════ TOOLBAR BUTTONS ═══════════════════════ */
+.toolbar-btns { display:flex; gap:6px; margin-left:auto; align-items:center; }
+.toolbar-btn { width:34px; height:34px; border-radius:8px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:all 0.2s; }
+.toolbar-btn:hover { border-color:var(--accent-gold); color:var(--accent-gold); }
+.export-btn { padding:6px 16px; width:auto; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; gap:6px; }
+
+/* ═══════════════════════ LIGHT THEME ═══════════════════════ */
+[data-theme="light"] {
+  --bg-primary: #f5f5f7; --bg-secondary: #eeeef0; --bg-card: #ffffff; --bg-card-hover: #f0f0f5;
+  --border: #d8d8e0; --text-primary: #1a1a2e; --text-secondary: #555570; --text-muted: #8888a8;
+  --accent-gold: #b8922a; --accent-gold-dim: rgba(184,146,42,0.12);
+}
+[data-theme="light"] .top-bar { background:rgba(245,245,247,0.95); }
+[data-theme="light"] .date-bar { background:rgba(238,238,240,0.97); }
+[data-theme="light"] .cal-dropdown { background:#fff; }
+[data-theme="light"] .cal-presets { background:#fafafa; }
+[data-theme="light"] .cal-day:hover { background:rgba(184,146,42,0.1); }
+[data-theme="light"] .cal-day.in-range { background:rgba(184,146,42,0.06); }
+[data-theme="light"] .more-filters { background:rgba(238,238,240,0.97); }
+[data-theme="light"] .funnel-bar-wrap { background:#e8e8ec; }
+[data-theme="light"] .funnel-bar span { color:#fff; }
+[data-theme="light"] ::-webkit-scrollbar-track { background:#f5f5f7; }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background:#c8c8d0; }
 </style>
 </head>
 <body>
@@ -278,6 +323,10 @@ body { font-family:'Inter',sans-serif; background:var(--bg-primary); color:var(-
     <span class="slider-val" id="tiktokVal">15%</span>
   </div>
   <button class="predict-btn" onclick="predict()">Predict</button>
+  <div class="toolbar-btns">
+    <button class="toolbar-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle Light/Dark Mode">&#x263E;</button>
+    <button class="toolbar-btn export-btn" onclick="exportPDF()" title="Download PDF Report">&#x1F4E5; PDF</button>
+  </div>
 </div>
 </div>
 
@@ -381,6 +430,22 @@ body { font-family:'Inter',sans-serif; background:var(--bg-primary); color:var(-
   <div class="kpi-card"><div class="label">Avg ROAS</div><div class="value" id="kpi-roas">--</div><div class="sub"><span class="trend-up" id="kpi-roas-trend"></span></div><div class="range" id="kpi-roas-range"></div></div>
   <div class="kpi-card"><div class="label">Cost Per Purchase</div><div class="value" id="kpi-cpp">--</div><div class="sub"><span class="trend-up" id="kpi-cpp-trend"></span></div><div class="range" id="kpi-cpp-range"></div></div>
   <div class="kpi-card"><div class="label">Expected Profit</div><div class="value" id="kpi-profit">--</div><div class="sub"><span class="trend-up" id="kpi-profit-trend"></span></div><div class="range" id="kpi-profit-range"></div></div>
+</div>
+
+<!-- CONVERSION FUNNEL -->
+<div class="section-title">Predicted Conversion Funnel</div>
+<div class="funnel-card">
+  <div class="funnel" id="funnelChart">
+    <div class="funnel-step"><span class="funnel-label">Impressions</span><div class="funnel-bar-wrap"><div class="funnel-bar bar-impressions" id="funnel-impressions"><span></span></div></div><div class="funnel-value" id="funnel-impressions-val">--</div></div>
+    <div class="funnel-arrow">&#x25BC;</div>
+    <div class="funnel-step"><span class="funnel-label">Reach</span><div class="funnel-bar-wrap"><div class="funnel-bar bar-reach" id="funnel-reach"><span></span></div></div><div class="funnel-value" id="funnel-reach-val">--</div></div>
+    <div class="funnel-arrow">&#x25BC;</div>
+    <div class="funnel-step"><span class="funnel-label">Clicks</span><div class="funnel-bar-wrap"><div class="funnel-bar bar-clicks" id="funnel-clicks"><span></span></div></div><div class="funnel-value" id="funnel-clicks-val">--</div></div>
+    <div class="funnel-arrow">&#x25BC;</div>
+    <div class="funnel-step"><span class="funnel-label">Purchases</span><div class="funnel-bar-wrap"><div class="funnel-bar bar-purchases" id="funnel-purchases"><span></span></div></div><div class="funnel-value" id="funnel-purchases-val">--</div></div>
+    <div class="funnel-arrow">&#x25BC;</div>
+    <div class="funnel-step"><span class="funnel-label">Revenue</span><div class="funnel-bar-wrap"><div class="funnel-bar bar-revenue" id="funnel-revenue"><span></span></div></div><div class="funnel-value" id="funnel-revenue-val">--</div></div>
+  </div>
 </div>
 
 <!-- CHARTS ROW 1 -->
@@ -890,6 +955,7 @@ function predict(){
   updateScenarioTable(totalBudgetUSD,totals,avgROAS,cpp,profit,totalBudgetKWD);
   updateComparisonTable(totalBudgetUSD,totals,avgROAS,cpp,totalBudgetKWD);
   updateInsights(totals,avgROAS,cpp,profit,totalBudgetKWD,pred);
+  updateFunnel(totals);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1024,6 +1090,97 @@ function updateInsights(totals,roas,cpp,profit,budgetKWD,pred){
     {i:'orange',e:'&#x1F4C8;',t:'<strong>Your '+fmtCur(budgetKWD)+' budget predicts '+fmtNum(Math.round(totals.purchases))+' purchases</strong> — '+(profit>0?'Profitable at '+roas.toFixed(2)+'x ROAS':'Below breakeven — reallocate to higher-ROAS platforms')+'.'}
   ];
   document.getElementById('insightsList').innerHTML=ins.map(x=>`<div class="insight-item"><div class="insight-icon ${x.i}">${x.e}</div><div>${x.t}</div></div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// FUNNEL VISUALIZATION
+// ═══════════════════════════════════════════════════════════
+function updateFunnel(totals) {
+  const maxVal = totals.impressions;
+  const steps = [
+    { id:'impressions', val:totals.impressions, label:fmt(totals.impressions) },
+    { id:'reach', val:totals.reach, label:fmt(totals.reach) },
+    { id:'clicks', val:totals.clicks, label:fmt(totals.clicks) },
+    { id:'purchases', val:totals.purchases, label:fmt(totals.purchases) },
+    { id:'revenue', val:totals.revenue, label:fmtCur(totals.revenue/KWD_TO_USD) }
+  ];
+  steps.forEach((s,i) => {
+    const pct = maxVal > 0 ? Math.max((s.val / maxVal) * 100, 3) : 0;
+    const bar = document.getElementById('funnel-' + s.id);
+    const valEl = document.getElementById('funnel-' + s.id + '-val');
+    setTimeout(() => {
+      bar.style.width = pct + '%';
+      bar.querySelector('span').textContent = i < 4 ? (pct > 10 ? ((s.val/maxVal)*100).toFixed(1)+'%' : '') : '';
+    }, i * 150);
+    valEl.innerHTML = s.label + (i > 0 ? '<div class="funnel-rate">' + ((s.val/steps[i-1].val)*100).toFixed(1) + '% from prev</div>' : '');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// DARK / LIGHT THEME
+// ═══════════════════════════════════════════════════════════
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('tfm_theme', next);
+  document.getElementById('themeToggle').innerHTML = next === 'light' ? '&#x2600;' : '&#x263E;';
+  // Re-render charts with updated colors
+  Object.values(charts).forEach(c => { if(c) c.update(); });
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem('tfm_theme');
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.getElementById('themeToggle').innerHTML = '&#x2600;';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// PDF EXPORT
+// ═══════════════════════════════════════════════════════════
+async function exportPDF() {
+  const btn = document.querySelector('.export-btn');
+  btn.innerHTML = '&#x23F3; Generating...';
+  btn.disabled = true;
+
+  try {
+    const dashboard = document.querySelector('.dashboard');
+    const canvas = await html2canvas(dashboard, {
+      backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim(),
+      scale: 1.5,
+      useCORS: true,
+      logging: false,
+      windowWidth: 1600
+    });
+
+    const { jsPDF } = window.jspdf;
+    const imgW = canvas.width;
+    const imgH = canvas.height;
+    const pdfW = 297; // A4 landscape width in mm
+    const pdfH = 210; // A4 landscape height
+    const ratio = pdfW / imgW;
+    const totalPdfHeight = imgH * ratio;
+    const pages = Math.ceil(totalPdfHeight / pdfH);
+
+    const pdf = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+
+    for (let i = 0; i < pages; i++) {
+      if (i > 0) pdf.addPage();
+      const yOffset = -(i * pdfH);
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', 0, yOffset, pdfW, totalPdfHeight);
+    }
+
+    const dateStr = new Date().toISOString().slice(0,10);
+    pdf.save('TFM_Dashboard_Report_' + dateStr + '.pdf');
+  } catch(err) {
+    alert('Export failed: ' + err.message);
+  }
+
+  btn.innerHTML = '&#x1F4E5; PDF';
+  btn.disabled = false;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1265,6 +1422,7 @@ function trimChatHistory() {
 Chart.register(ChartDataLabels);
 Chart.defaults.font.family='Inter';
 window.addEventListener('load',()=>{
+  loadTheme();
   updateDateChip();
   loadAIKey();
   setTimeout(()=>{ updateHistoricalKPIs(); predict(); },300);
